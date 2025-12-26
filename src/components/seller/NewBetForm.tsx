@@ -126,7 +126,15 @@ export function NewBetForm() {
   };
 
   const handleAddNumber = () => {
-    if (!canAddNumber) return;
+    if (!isNumberValid) {
+      toast.error(`O número precisa ter ${selectedGameInfo.digits} dígitos`);
+      return;
+    }
+
+    if (!isValueValid) {
+      toast.error('Informe o valor por número antes de adicionar');
+      return;
+    }
 
     const newEntry: NumberEntry = {
       id: Date.now().toString(),
@@ -134,9 +142,9 @@ export function NewBetForm() {
       valor: parseFloat(valor),
     };
 
-    setNumbers(prev => [...prev, newEntry]);
+    setNumbers((prev) => [...prev, newEntry]);
     setNumero('');
-    
+
     toast.success(`Número ${numero} adicionado à lista!`);
     numeroInputRef.current?.focus();
   };
@@ -289,7 +297,6 @@ export function NewBetForm() {
               type="button"
               variant="secondary"
               onClick={handleAddNumber}
-              disabled={!canAddNumber}
               className="gap-1 px-4"
             >
               <Plus className="w-4 h-4" />
