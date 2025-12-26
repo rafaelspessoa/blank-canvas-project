@@ -279,7 +279,7 @@ VALOR DO PRÊMIO: R$ ${potentialPrize.toLocaleString('pt-BR', {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 mt-6">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Button 
           variant="outline" 
           className="flex-1"
