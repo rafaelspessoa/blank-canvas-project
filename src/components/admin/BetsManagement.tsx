@@ -73,169 +73,183 @@ export function BetsManagement() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Apostas</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Todas as Apostas</h1>
           <p className="text-muted-foreground mt-1">
-            {filteredBets.length} apostas • Total: {totalValue.toLocaleString('pt-BR', { 
-              style: 'currency', 
-              currency: 'BRL' 
-            })}
+            Gerencie todas as apostas do sistema
           </p>
         </div>
-        
-        <Button variant="outline" size="lg">
-          <Download className="w-5 h-5 mr-2" />
+        <Button variant="outline" size="lg" className="gap-2">
+          <Download className="w-5 h-5" />
           Exportar
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por número, vendedor ou código..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <Select value={gameTypeFilter} onValueChange={setGameTypeFilter}>
-          <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="Tipo de jogo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os tipos</SelectItem>
-            <SelectItem value="milhar">Milhar</SelectItem>
-            <SelectItem value="centena">Centena</SelectItem>
-            <SelectItem value="dezena">Dezena</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="bg-card border border-border rounded-xl shadow-sm p-3 sm:p-4 space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome, número ou código..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="ativa">Ativas</SelectItem>
-            <SelectItem value="cancelada">Canceladas</SelectItem>
-            <SelectItem value="paga">Pagas</SelectItem>
-          </SelectContent>
-        </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue placeholder="Todos os Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="ativa">Ativas</SelectItem>
+              <SelectItem value="cancelada">Canceladas</SelectItem>
+              <SelectItem value="paga">Pagas</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Select value={gameTypeFilter} onValueChange={setGameTypeFilter}>
+            <SelectTrigger className="w-full sm:w-56">
+              <SelectValue placeholder="Todos os Jogos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Jogos</SelectItem>
+              <SelectItem value="milhar">Milhar</SelectItem>
+              <SelectItem value="centena">Centena</SelectItem>
+              <SelectItem value="dezena">Dezena</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="hidden sm:flex items-center text-sm text-muted-foreground ml-auto">
+            <span>
+              {filteredBets.length} apostas • Total:{' '}
+              {totalValue.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              })}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Bets List */}
-      <div className="glass-card rounded-xl overflow-hidden">
-        {/* Desktop Table Header */}
-        <div className="hidden md:grid md:grid-cols-7 gap-4 p-4 bg-muted/50 text-sm font-medium text-muted-foreground">
-          <div>Código</div>
-          <div>Vendedor</div>
-          <div>Tipo</div>
-          <div>Número</div>
-          <div>Valor</div>
-          <div>Data/Hora</div>
-          <div className="text-right">Ações</div>
-        </div>
+      <div className="space-y-4">
+        {filteredBets.length > 0 ? (
+          filteredBets.map((bet) => (
+            <article
+              key={bet.id}
+              className={cn(
+                'bg-card border border-border rounded-xl shadow-sm overflow-hidden',
+                bet.status === 'cancelada' && 'opacity-60'
+              )}
+            >
+              {/* Card header: apostador / vendedor */}
+              <header className="px-4 pt-4 pb-3 border-b border-border/60 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <span>
+                      Apostador:{' '}
+                      <span className="font-bold">
+                        {bet.apostador_nome || 'Não informado'}
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                        bet.status === 'ativa' && 'bg-success/10 text-success',
+                        bet.status === 'cancelada' && 'bg-destructive/10 text-destructive',
+                        bet.status === 'paga' && 'bg-primary/10 text-primary'
+                      )}
+                    >
+                      {bet.status}
+                    </span>
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Vendedor: <span className="font-medium">{bet.vendedor_nome}</span>
+                  </p>
+                  {bet.apostador_telefone && (
+                    <p className="text-xs text-muted-foreground">
+                      Telefone: {bet.apostador_telefone}
+                    </p>
+                  )}
+                </div>
+                <div className="text-right text-xs text-muted-foreground">
+                  <p>Código</p>
+                  <p className="font-mono font-medium text-foreground">{bet.codigo}</p>
+                  <p className="mt-1">
+                    {format(new Date(bet.data_hora), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  </p>
+                </div>
+              </header>
 
-        <div className="divide-y divide-border">
-          {filteredBets.length > 0 ? (
-            filteredBets.map((bet) => (
-              <div 
-                key={bet.id}
-                className={cn(
-                  "p-4 hover:bg-muted/30 transition-colors",
-                  bet.status === 'cancelada' && "opacity-50"
-                )}
-              >
-                {/* Mobile Layout */}
-                <div className="md:hidden space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <span className="font-mono font-bold text-primary text-xl">
-                          {bet.numero}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground">{bet.vendedor_nome}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{bet.codigo}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-foreground">
-                        {bet.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                      </p>
-                      <GameTypeBadge type={bet.tipo_jogo} size="sm" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(bet.data_hora), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                      </span>
-                    </div>
-                    {bet.status === 'ativa' && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => openCancelDialog(bet.id)}
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Cancelar
-                      </Button>
-                    )}
-                    {bet.status === 'cancelada' && (
-                      <span className="text-xs font-medium text-destructive bg-destructive/10 px-2 py-1 rounded">
-                        Cancelada
-                      </span>
-                    )}
-                  </div>
+              {/* Card body: números, tipo e valor */}
+              <div className="px-4 py-3 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Número:</span>
+                  <span className="inline-flex items-center rounded-full bg-primary text-primary-foreground px-3 py-1 font-mono font-semibold text-base">
+                    {bet.numero}
+                  </span>
+                  <GameTypeBadge type={bet.tipo_jogo} size="sm" className="ml-1" />
                 </div>
 
-                {/* Desktop Layout */}
-                <div className="hidden md:grid md:grid-cols-7 gap-4 items-center">
-                  <div className="font-mono text-sm text-muted-foreground">{bet.codigo}</div>
-                  <div className="font-medium text-foreground">{bet.vendedor_nome}</div>
-                  <div><GameTypeBadge type={bet.tipo_jogo} size="sm" /></div>
-                  <div className="font-mono font-bold text-lg text-primary">{bet.numero}</div>
-                  <div className="font-semibold text-foreground">
-                    {bet.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {format(new Date(bet.data_hora), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                  </div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Valor da aposta:{' '}
+                    <span className="font-semibold text-foreground">
+                      {bet.valor.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}
+                    </span>
+                  </p>
+
                   <div className="text-right">
-                    {bet.status === 'ativa' && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => openCancelDialog(bet.id)}
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Cancelar
-                      </Button>
-                    )}
-                    {bet.status === 'cancelada' && (
-                      <span className="text-xs font-medium text-destructive bg-destructive/10 px-2 py-1 rounded">
-                        Cancelada
-                      </span>
-                    )}
+                    <p className="text-xs text-muted-foreground">Total</p>
+                    <p className="text-xl font-bold text-primary">
+                      {bet.valor.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}
+                    </p>
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="p-8 text-center text-muted-foreground">
-              Nenhuma aposta encontrada
-            </div>
-          )}
-        </div>
+
+              {/* Card footer: ações */}
+              <footer className="px-4 pb-4 pt-3 border-t border-border/60 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-xs text-muted-foreground">
+                  Código: <span className="font-mono">{bet.codigo}</span>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  {bet.status === 'ativa' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-destructive text-destructive hover:bg-destructive/10"
+                      onClick={() => openCancelDialog(bet.id)}
+                    >
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Cancelar aposta
+                    </Button>
+                  ) : (
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Aposta {bet.status}
+                    </span>
+                  )}
+                </div>
+              </footer>
+            </article>
+          ))
+        ) : (
+          <div className="p-8 text-center text-muted-foreground bg-card border border-dashed border-border rounded-xl">
+            Nenhuma aposta encontrada
+          </div>
+        )}
       </div>
 
       {/* Cancel Dialog */}
@@ -249,7 +263,7 @@ export function BetsManagement() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Voltar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleCancelBet}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -261,3 +275,4 @@ export function BetsManagement() {
     </div>
   );
 }
+
