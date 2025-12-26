@@ -8,7 +8,8 @@ import {
   Filter, 
   XCircle,
   Calendar,
-  Download
+  Download,
+  Printer
 } from 'lucide-react';
 import {
   Select,
@@ -225,7 +226,25 @@ export function BetsManagement() {
                 <div className="text-xs text-muted-foreground">
                   Código: <span className="font-mono">{bet.codigo}</span>
                 </div>
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-2 justify-end flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => window.print()}
+                  >
+                    <Printer className="w-4 h-4" />
+                    Imprimir
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => window.print()}
+                  >
+                    <Download className="w-4 h-4" />
+                    PDF
+                  </Button>
                   {bet.status === 'ativa' ? (
                     <Button
                       variant="outline"
