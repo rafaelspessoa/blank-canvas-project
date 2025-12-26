@@ -38,6 +38,7 @@ export function NewBetForm() {
   const { user } = useAuth();
   const { addBet } = useBets();
   const { games } = useGames();
+  const activeGames = games.filter((game) => game.ativo);
   
   const [selectedGame, setSelectedGame] = useState<GameType>('milhar');
   const [selectedRegisteredGameId, setSelectedRegisteredGameId] = useState<string | null>(null);
@@ -201,10 +202,9 @@ export function NewBetForm() {
           </p>
         </div>
 
-        {/* Seleção de Jogo Cadastrado */}
         <div className="space-y-2">
           <Label className="text-sm text-muted-foreground">Selecione o Jogo</Label>
-          {games.length > 0 ? (
+          {activeGames.length > 0 ? (
             <div className="w-full">
               <select
                 className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
@@ -213,7 +213,7 @@ export function NewBetForm() {
                   const id = e.target.value || null;
                   setSelectedRegisteredGameId(id);
 
-                  const game = games.find((g) => g.id === id);
+                  const game = activeGames.find((g) => g.id === id);
                   if (game) {
                     setSelectedGame(game.tipo);
                   }
@@ -225,7 +225,7 @@ export function NewBetForm() {
                 <option value="" disabled>
                   Escolha um jogo disponível
                 </option>
-                {games.map((game) => {
+                {activeGames.map((game) => {
                   const gameInfo = gameTypes.find((g) => g.type === game.tipo)!;
                   return (
                     <option key={game.id} value={game.id}>
