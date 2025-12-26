@@ -25,6 +25,8 @@ export interface Bet {
   data_hora: string;
   status: BetStatus;
   codigo: string;
+  apostador_nome?: string;
+  apostador_telefone?: string;
 }
 
 export interface DailyClose {
