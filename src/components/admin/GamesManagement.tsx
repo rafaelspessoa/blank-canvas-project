@@ -21,43 +21,7 @@ import { GameType } from '@/types';
 import { Plus, Edit2, Trash2, Trophy, DollarSign, Clock, Power } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-
-interface Game {
-  id: string;
-  nome: string;
-  tipo: 'milhar' | 'centena';
-  valor_minimo: number;
-  valor_maximo: number;
-  multiplicador: number;
-  horario_abertura: string;
-  horario_fechamento: string;
-  ativo: boolean;
-}
-
-const initialGames: Game[] = [
-  {
-    id: '1',
-    nome: 'Milhar Principal',
-    tipo: 'milhar',
-    valor_minimo: 1,
-    valor_maximo: 100,
-    multiplicador: 4000,
-    horario_abertura: '08:00',
-    horario_fechamento: '22:00',
-    ativo: true,
-  },
-  {
-    id: '2',
-    nome: 'Centena Rápida',
-    tipo: 'centena',
-    valor_minimo: 1,
-    valor_maximo: 200,
-    multiplicador: 600,
-    horario_abertura: '09:00',
-    horario_fechamento: '21:00',
-    ativo: true,
-  },
-];
+import { Game, useGames } from '@/contexts/GamesContext';
 
 const tipoInfo = {
   milhar: { label: 'Milhar', digits: 4, description: '4 dígitos (0000-9999)' },
@@ -65,7 +29,7 @@ const tipoInfo = {
 };
 
 export function GamesManagement() {
-  const [games, setGames] = useState<Game[]>(initialGames);
+  const { games, addGame, updateGame, deleteGame, toggleActive } = useGames();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [formData, setFormData] = useState<Partial<Game>>({
@@ -117,9 +81,11 @@ export function GamesManagement() {
     }
 
     if (editingGame) {
-      setGames(prev => prev.map(g => 
-        g.id === editingGame.id ? { ...g, ...formData } as Game : g
-      ));
+      const updatedGame: Game = {
+        ...(editingGame as Game),
+        ...formData,
+      } as Game;
+      updateGame(updatedGame);
       toast.success('Jogo atualizado com sucesso!');
     } else {
       const newGame: Game = {
@@ -133,23 +99,21 @@ export function GamesManagement() {
         horario_fechamento: formData.horario_fechamento!,
         ativo: formData.ativo!,
       };
-      setGames(prev => [...prev, newGame]);
+      addGame(newGame);
       toast.success('Jogo criado com sucesso!');
     }
-
+ 
     handleCloseDialog();
   };
 
   const handleToggleActive = (id: string) => {
-    setGames(prev => prev.map(g => 
-      g.id === id ? { ...g, ativo: !g.ativo } : g
-    ));
-    const game = games.find(g => g.id === id);
+    const game = games.find((g) => g.id === id);
+    toggleActive(id);
     toast.success(`Jogo ${game?.ativo ? 'desativado' : 'ativado'} com sucesso!`);
   };
-
+ 
   const handleDelete = (id: string) => {
-    setGames(prev => prev.filter(g => g.id !== id));
+    deleteGame(id);
     toast.success('Jogo excluído com sucesso!');
   };
 
