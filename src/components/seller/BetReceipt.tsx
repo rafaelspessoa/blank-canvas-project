@@ -61,17 +61,19 @@ export function BetReceipt({ bet, allBets, onClose }: BetReceiptProps) {
      COMPROVANTE DE APOSTA
 ═══════════════════════════════
 ${format(new Date(bet.data_hora), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-
+ 
 RECIBO:     ${receiptCode}
 JOGO:       ${bet.tipo_jogo.toUpperCase()}
 VENDEDOR:   ${bet.vendedor_nome?.toUpperCase()}
-
+APOSTADOR:  ${(bet.apostador_nome || '-').toUpperCase()}
+TELEFONE:   ${bet.apostador_telefone || '-'}
+ 
 - NÚMEROS APOSTADOS -
 ${numbersText}
-
+ 
 QTD NÚMEROS:          ${bets.length}
 VALOR UNIT:           R$ ${valorUnit.toFixed(2)}
-
+ 
 TOTAL:                R$ ${totalValue.toFixed(2)}
 
 ┌─────────────────────────────┐
@@ -137,6 +139,14 @@ TOTAL:                R$ ${totalValue.toFixed(2)}
           <div className="flex justify-between">
             <span className="text-gray-600">VENDEDOR:</span>
             <span className="font-semibold">{bet.vendedor_nome?.toUpperCase()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">APOSTADOR:</span>
+            <span className="font-semibold">{(bet.apostador_nome || '-').toUpperCase()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">TELEFONE:</span>
+            <span className="font-semibold">{bet.apostador_telefone || '-'}</span>
           </div>
         </div>
 

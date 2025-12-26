@@ -165,13 +165,15 @@ export function NewBetForm() {
 
     const bets: Bet[] = [];
     
-    numbers.forEach(entry => {
+    numbers.forEach((entry) => {
       const newBet = addBet({
         vendedor_id: user.id,
         vendedor_nome: user.nome,
         tipo_jogo: selectedGame,
         numero: entry.numero,
         valor: entry.valor,
+        apostador_nome: bettorName || undefined,
+        apostador_telefone: bettorPhone || undefined,
       });
       bets.push(newBet);
     });
