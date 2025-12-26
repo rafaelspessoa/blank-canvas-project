@@ -124,28 +124,29 @@ export function NewBetForm() {
   const handleQuickValue = (value: number) => {
     setValor(value.toString());
   };
-
+ 
   const handleAddNumber = () => {
     if (!isNumberValid) {
       toast.error(`O número precisa ter ${selectedGameInfo.digits} dígitos`);
       return;
     }
-
-    if (!isValueValid) {
-      toast.error('Informe o valor por número antes de adicionar');
-      return;
-    }
-
+ 
+    const valorNumero = isValueValid ? parseFloat(valor) : 0;
+ 
     const newEntry: NumberEntry = {
       id: Date.now().toString(),
       numero,
-      valor: parseFloat(valor),
+      valor: valorNumero,
     };
-
+ 
     setNumbers((prev) => [...prev, newEntry]);
     setNumero('');
-
-    toast.success(`Número ${numero} adicionado à lista!`);
+ 
+    toast.success(
+      valorNumero > 0
+        ? `Número ${numero} adicionado com valor R$ ${valorNumero.toFixed(2)}`
+        : `Número ${numero} adicionado! Defina o valor depois.`,
+    );
     numeroInputRef.current?.focus();
   };
 
@@ -162,7 +163,13 @@ export function NewBetForm() {
 
   const handleSubmit = () => {
     if (!canSubmit || !user) return;
-
+ 
+    const hasInvalidValue = numbers.some((entry) => !entry.valor || entry.valor <= 0);
+    if (hasInvalidValue) {
+      toast.error('Defina um valor maior que zero para todos os números antes de salvar.');
+      return;
+    }
+ 
     const bets: Bet[] = [];
     
     numbers.forEach((entry) => {
@@ -177,14 +184,14 @@ export function NewBetForm() {
       });
       bets.push(newBet);
     });
-
+ 
     setLastBets(bets);
     setShowReceipt(true);
     
     toast.success(`${numbers.length} aposta(s) registrada(s)!`, {
       description: `Total: R$ ${totalValue.toFixed(2)}`,
     });
-
+ 
     // Reset form
     setNumbers([]);
     setNumero('');
@@ -332,6 +339,25 @@ export function NewBetForm() {
               min="0"
               step="0.5"
             />
+          </div>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!numbers.length}
+              onClick={() => {
+                if (!isValueValid) {
+                  toast.error('Informe um valor válido para aplicar em todos os números.');
+                  return;
+                }
+                const valorNumero = parseFloat(valor);
+                setNumbers((prev) => prev.map((entry) => ({ ...entry, valor: valorNumero })));
+                toast.success('Valor aplicado em todos os números.');
+              }}
+            >
+              Aplicar valor em todos os números
+            </Button>
           </div>
         </div>
 
