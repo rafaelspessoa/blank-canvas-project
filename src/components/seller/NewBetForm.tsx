@@ -247,7 +247,7 @@ export function NewBetForm() {
         {/* Nome e Telefone do Apostador */}
         <div className="space-y-3">
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Nome do Apostador (opcional)</Label>
+            <Label className="text-sm text-muted-foreground">Nome do Apostador</Label>
             <Input
               placeholder="Digite o nome do apostador"
               value={bettorName}
@@ -255,7 +255,7 @@ export function NewBetForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Telefone do Apostador (opcional)</Label>
+            <Label className="text-sm text-muted-foreground">Telefone do Apostador</Label>
             <Input
               placeholder="(00) 00000-0000"
               inputMode="tel"
