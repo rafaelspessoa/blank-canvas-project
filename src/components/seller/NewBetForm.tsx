@@ -286,10 +286,10 @@ export function NewBetForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={handleClearAll}
+              onClick={handleRandomNumber}
               className="px-3"
             >
-              <Trash2 className="w-4 h-4" />
+              <Shuffle className="w-4 h-4" />
             </Button>
           </div>
         </div>
