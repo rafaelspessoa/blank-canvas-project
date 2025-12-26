@@ -32,6 +32,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Bet } from '@/types';
 
 export function BetsManagement() {
   const { bets, cancelBet } = useBets();
@@ -69,6 +70,77 @@ export function BetsManagement() {
   const openCancelDialog = (id: string) => {
     setSelectedBetId(id);
     setCancelDialogOpen(true);
+  };
+
+  const handlePrintBet = (bet: Bet) => {
+    const valorFormatado = bet.valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+
+    const dataFormatada = format(new Date(bet.data_hora), "dd/MM/yyyy HH:mm", { locale: ptBR });
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charSet="utf-8" />
+  <title>Comprovante de Aposta</title>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 16px; background: #f5f5f5; }
+    .receipt { max-width: 360px; margin: 0 auto; background: #ffffff; color: #111827; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 16px 16px 20px; font-size: 13px; }
+    .title { text-align: center; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .muted { color: #6b7280; }
+    .section { border-top: 1px dashed #d1d5db; padding-top: 8px; margin-top: 8px; }
+    .row { display: flex; justify-content: space-between; margin-top: 4px; }
+    .number-pill { display:inline-block; padding:6px 12px; border-radius:999px; background:#047857; color:#ecfdf5; font-weight:600; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; margin-top:4px; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:600; margin-left:8px; }
+    .total-box { margin-top:12px; padding:10px 12px; border-radius:8px; border:1px dashed #111827; text-align:center; }
+    .total-label { font-size:12px; font-weight:600; }
+    .total-value { font-size:18px; font-weight:700; margin-top:2px; }
+    .footer { margin-top:10px; text-align:center; font-size:11px; color:#9ca3af; }
+    @media print { body { background:#fff; padding:0; } .receipt { box-shadow:none; margin:0; } }
+  </style>
+</head>
+<body>
+  <div class="receipt">
+    <div class="title">COMPROVANTE DE APOSTA</div>
+    <div class="muted" style="text-align:center; margin-bottom:8px;">${dataFormatada}</div>
+
+    <div class="section">
+      <div class="row"><span class="muted">CÓDIGO:</span><span>${bet.codigo}</span></div>
+      ${bet.vendedor_nome ? `<div class="row"><span class="muted">VENDEDOR:</span><span>${bet.vendedor_nome}</span></div>` : ''}
+      ${bet.apostador_nome ? `<div class="row"><span class="muted">APOSTADOR:</span><span>${bet.apostador_nome}</span></div>` : ''}
+      ${bet.apostador_telefone ? `<div class="row"><span class="muted">TELEFONE:</span><span>${bet.apostador_telefone}</span></div>` : ''}
+    </div>
+
+    <div class="section">
+      <div class="muted" style="text-align:center;">- NÚMERO APOSTADO -</div>
+      <div style="text-align:center; margin-top:6px;">
+        <span class="number-pill">${bet.numero}</span>
+        <span class="badge">${bet.tipo_jogo.toUpperCase()}</span>
+      </div>
+      <div class="row" style="margin-top:10px;"><span class="muted">VALOR:</span><span>${valorFormatado}</span></div>
+    </div>
+
+    <div class="total-box">
+      <div class="total-label">TOTAL</div>
+      <div class="total-value">${valorFormatado}</div>
+    </div>
+
+    <div class="footer">Boa sorte!</div>
+  </div>
+  <script>
+    window.onload = function() { window.print(); };
+  </script>
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank', 'width=420,height=600');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
   };
 
   return (
@@ -231,7 +303,7 @@ export function BetsManagement() {
                     variant="outline"
                     size="sm"
                     className="gap-1"
-                    onClick={() => window.print()}
+                    onClick={() => handlePrintBet(bet)}
                   >
                     <Printer className="w-4 h-4" />
                     Imprimir
@@ -240,7 +312,7 @@ export function BetsManagement() {
                     variant="outline"
                     size="sm"
                     className="gap-1"
-                    onClick={() => window.print()}
+                    onClick={() => handlePrintBet(bet)}
                   >
                     <Download className="w-4 h-4" />
                     PDF
