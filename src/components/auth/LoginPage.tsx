@@ -1,0 +1,135 @@
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LogIn, User, Lock, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+
+export function LoginPage() {
+  const { login } = useAuth();
+  const [usuario, setUsuario] = useState('');
+  const [senha, setSenha] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const success = await login(usuario, senha);
+      
+      if (success) {
+        toast.success('Login realizado com sucesso!');
+      } else {
+        setError('Usuário ou senha incorretos');
+      }
+    } catch (err) {
+      setError('Erro ao fazer login. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="w-20 h-20 rounded-2xl bg-primary mx-auto mb-4 flex items-center justify-center shadow-glow">
+            <span className="text-primary-foreground font-bold text-3xl">M</span>
+          </div>
+          <h1 className="text-3xl font-bold text-foreground">Milhar Pro</h1>
+          <p className="text-muted-foreground mt-2">Sistema de Gestão de Apostas</p>
+        </div>
+
+        {/* Login Form */}
+        <div className="glass-card rounded-2xl p-6 md:p-8 animate-slide-up">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="usuario">Usuário</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  id="usuario"
+                  type="text"
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
+                  placeholder="Digite seu usuário"
+                  className="pl-10 h-12"
+                  required
+                  autoComplete="username"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="senha">Senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  id="senha"
+                  type="password"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  placeholder="Digite sua senha"
+                  className="pl-10 h-12"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              variant="accent"
+              size="xl"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="animate-pulse">Entrando...</span>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Entrar
+                </>
+              )}
+            </Button>
+          </form>
+
+          {/* Demo Credentials */}
+          <div className="mt-6 pt-6 border-t border-border">
+            <p className="text-sm text-muted-foreground text-center mb-3">
+              Credenciais de demonstração:
+            </p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="font-medium text-foreground">Admin</p>
+                <p className="text-muted-foreground">admin / admin123</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="font-medium text-foreground">Vendedor</p>
+                <p className="text-muted-foreground">joao / 123456</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          © 2024 Milhar Pro. Todos os direitos reservados.
+        </p>
+      </div>
+    </div>
+  );
+}
