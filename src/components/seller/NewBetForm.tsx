@@ -25,6 +25,12 @@ const gameTypes: { type: GameType; label: string; digits: number }[] = [
   { type: 'dezena', label: 'Dezena', digits: 2 },
 ];
 
+const registeredGames: { id: string; nome: string; type: GameType }[] = [
+  { id: '1', nome: 'Milhar Principal', type: 'milhar' },
+  { id: '2', nome: 'Centena Rápida', type: 'centena' },
+  { id: '3', nome: 'Dezena Especial', type: 'dezena' },
+];
+
 const quickValues = [1, 2, 5, 10, 20, 50];
 
 interface NumberEntry {
@@ -38,6 +44,7 @@ export function NewBetForm() {
   const { addBet } = useBets();
   
   const [selectedGame, setSelectedGame] = useState<GameType>('milhar');
+  const [selectedRegisteredGameId, setSelectedRegisteredGameId] = useState<string | null>(null);
   const [numero, setNumero] = useState('');
   const [valor, setValor] = useState('');
   const [numbers, setNumbers] = useState<NumberEntry[]>([]);
@@ -198,6 +205,43 @@ export function NewBetForm() {
         </p>
       </div>
 
+      {/* Registered Games Selection */}
+      <div className="glass-card rounded-xl p-4">
+        <Label className="text-sm text-muted-foreground mb-3 block">Jogo Cadastrado</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {registeredGames.map((game) => {
+            const gameInfo = gameTypes.find((g) => g.type === game.type)!;
+            const isSelected = selectedRegisteredGameId === game.id;
+            return (
+              <button
+                key={game.id}
+                type="button"
+                onClick={() => {
+                  setSelectedRegisteredGameId(game.id);
+                  setSelectedGame(game.type);
+                  setNumero('');
+                  setNumbers([]);
+                }}
+                className={cn(
+                  'p-3 rounded-lg text-left transition-all duration-200 border',
+                  isSelected
+                    ? 'border-accent bg-accent/10 shadow-lg'
+                    : 'border-border bg-muted text-muted-foreground hover:bg-muted/80'
+                )}
+              >
+                <span className="block text-sm font-semibold text-foreground">{game.nome}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {gameInfo.label} • {gameInfo.digits} dígitos
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Se preferir, você também pode escolher o tipo de jogo diretamente abaixo.
+        </p>
+      </div>
+
       {/* Game Type Selection */}
       <div className="glass-card rounded-xl p-4">
         <Label className="text-sm text-muted-foreground mb-3 block">Tipo de Jogo</Label>
@@ -207,14 +251,15 @@ export function NewBetForm() {
               key={type}
               onClick={() => {
                 setSelectedGame(type);
+                setSelectedRegisteredGameId(null);
                 setNumero('');
                 setNumbers([]);
               }}
               className={cn(
-                "p-3 rounded-lg font-medium transition-all duration-200",
+                'p-3 rounded-lg font-medium transition-all duration-200',
                 selectedGame === type
                   ? `game-badge-${type} shadow-lg`
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               )}
             >
               <span className="block text-sm">{label}</span>
