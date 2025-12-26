@@ -45,6 +45,7 @@ export function NewBetForm() {
   const [numero, setNumero] = useState('');
   const [valor, setValor] = useState('');
   const [bettorName, setBettorName] = useState('');
+  const [bettorPhone, setBettorPhone] = useState('');
   const [numbers, setNumbers] = useState<NumberEntry[]>([]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastBets, setLastBets] = useState<Bet[]>([]);
@@ -243,14 +244,25 @@ export function NewBetForm() {
           )}
         </div>
 
-        {/* Nome do Apostador */}
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">Nome do Apostador (opcional)</Label>
-          <Input
-            placeholder="Digite o nome do apostador"
-            value={bettorName}
-            onChange={(e) => setBettorName(e.target.value)}
-          />
+        {/* Nome e Telefone do Apostador */}
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label className="text-sm text-muted-foreground">Nome do Apostador (opcional)</Label>
+            <Input
+              placeholder="Digite o nome do apostador"
+              value={bettorName}
+              onChange={(e) => setBettorName(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm text-muted-foreground">Telefone do Apostador (opcional)</Label>
+            <Input
+              placeholder="(00) 00000-0000"
+              inputMode="tel"
+              value={bettorPhone}
+              onChange={(e) => setBettorPhone(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Número da Aposta */}
