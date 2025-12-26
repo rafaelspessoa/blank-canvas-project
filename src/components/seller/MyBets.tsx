@@ -48,11 +48,20 @@ export function MyBets() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Minhas Apostas</h1>
-        <p className="text-muted-foreground mt-1">
-          Acompanhe suas vendas do dia
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Minhas Apostas</h1>
+          <p className="text-muted-foreground mt-1">Acompanhe suas vendas do dia</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="flex items-center gap-2 self-start sm:self-auto"
+          onClick={() => window.print()}
+        >
+          <Receipt className="w-4 h-4" />
+          Exportar / PDF
+        </Button>
       </div>
 
       {/* Stats */}
