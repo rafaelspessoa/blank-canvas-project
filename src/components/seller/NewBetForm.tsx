@@ -44,6 +44,7 @@ export function NewBetForm() {
   const [selectedRegisteredGameId, setSelectedRegisteredGameId] = useState<string | null>(null);
   const [numero, setNumero] = useState('');
   const [valor, setValor] = useState('');
+  const [bettorName, setBettorName] = useState('');
   const [numbers, setNumbers] = useState<NumberEntry[]>([]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastBets, setLastBets] = useState<Bet[]>([]);
@@ -247,10 +248,8 @@ export function NewBetForm() {
           <Label className="text-sm text-muted-foreground">Nome do Apostador (opcional)</Label>
           <Input
             placeholder="Digite o nome do apostador"
-            // Mantemos este estado apenas na interface por enquanto
-            // para não alterar a estrutura das apostas salvas.
-            value={""}
-            onChange={() => {}}
+            value={bettorName}
+            onChange={(e) => setBettorName(e.target.value)}
           />
         </div>
 
