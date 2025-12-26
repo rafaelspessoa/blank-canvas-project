@@ -48,6 +48,11 @@ export function BetReceipt({ bet, allBets, onClose }: BetReceiptProps) {
     toast.success('Enviando para impressão...');
   };
 
+  const handleGeneratePdf = () => {
+    window.print();
+    toast.success('Na janela de impressão, escolha "Salvar como PDF".');
+  };
+
   const handleShare = async () => {
     const numbersText = bets.map(b => b.numero).join('    ');
     

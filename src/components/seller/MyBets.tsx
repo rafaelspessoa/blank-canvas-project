@@ -15,11 +15,14 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { Bet } from '@/types';
+import { BetReceipt } from './BetReceipt';
 
 export function MyBets() {
   const { user } = useAuth();
   const { getBetsByVendedor, getTodayTotal, getTodayCount } = useBets();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBet, setSelectedBet] = useState<Bet | null>(null);
 
   if (!user) return null;
 
@@ -32,6 +35,15 @@ export function MyBets() {
     bet.numero.includes(searchTerm) ||
     bet.codigo.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (selectedBet) {
+    return (
+      <BetReceipt
+        bet={selectedBet}
+        onClose={() => setSelectedBet(null)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -107,15 +119,24 @@ export function MyBets() {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right space-y-2">
                     <p className="font-bold text-lg text-foreground">
                       {bet.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </p>
                     {bet.status === 'ativa' ? (
-                      <span className="text-xs font-medium text-success">Ativa</span>
+                      <span className="block text-xs font-medium text-success">Ativa</span>
                     ) : (
-                      <span className="text-xs font-medium text-destructive">Cancelada</span>
+                      <span className="block text-xs font-medium text-destructive">Cancelada</span>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-1"
+                      onClick={() => setSelectedBet(bet)}
+                    >
+                      <Receipt className="w-3 h-3 mr-1" />
+                      Comprovante
+                    </Button>
                   </div>
                 </div>
               </div>
