@@ -9,6 +9,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { jsPDF } from 'jspdf';
 
 interface BetReceiptProps {
   bet: Bet;
@@ -44,64 +45,136 @@ export function BetReceipt({ bet, allBets, onClose }: BetReceiptProps) {
   };
 
   const handlePrint = () => {
-    window.print();
-    toast.success('Enviando para impressão...');
+    const numbersHtml = bets
+      .map(
+        (b) =>
+          `<div style="text-align:center;font-weight:700;font-size:18px;padding:6px 0;margin-bottom:4px;border-radius:6px;background:#f3f4f6;">${b.numero}</div>`,
+      )
+      .join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charSet="utf-8" />
+  <title>Comprovante de Aposta</title>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 16px; background: #f5f5f5; }
+    .receipt { max-width: 360px; margin: 0 auto; background: #ffffff; color: #111827; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 16px 16px 20px; font-size: 13px; }
+    .title { text-align: center; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .muted { color: #6b7280; }
+    .section { border-top: 1px dashed #d1d5db; padding-top: 8px; margin-top: 8px; }
+    .row { display: flex; justify-content: space-between; margin-top: 4px; }
+    .numbers-title { text-align:center; margin-bottom:6px; color:#6b7280; }
+    .total-box { margin-top:12px; padding:10px 12px; border-radius:8px; border:1px dashed #111827; text-align:center; }
+    .total-label { font-size:12px; font-weight:600; }
+    .total-value { font-size:18px; font-weight:700; margin-top:2px; }
+    .prize-box { margin-top:12px; padding:10px 12px; border-radius:8px; border:2px solid #111827; text-align:center; background:#f9fafb; }
+    .footer { margin-top:10px; text-align:center; font-size:11px; color:#9ca3af; }
+    @media print { body { background:#fff; padding:0; } .receipt { box-shadow:none; margin:0; } }
+  </style>
+</head>
+<body>
+  <div class="receipt">
+    <div class="title">COMPROVANTE DE APOSTA</div>
+    <div class="muted" style="text-align:center; margin-bottom:8px;">${format(
+      new Date(bet.data_hora),
+      "dd/MM/yyyy HH:mm",
+      { locale: ptBR },
+    )}</div>
+
+    <div class="section">
+      <div class="row"><span class="muted">RECIBO:</span><span>${receiptCode.substring(0, 20)}</span></div>
+      <div class="row"><span class="muted">JOGO:</span><span>${bet.tipo_jogo.toUpperCase()}</span></div>
+      <div class="row"><span class="muted">VENDEDOR:</span><span>${
+        bet.vendedor_nome?.toUpperCase() ?? ''
+      }</span></div>
+      <div class="row"><span class="muted">APOSTADOR:</span><span>${(
+        bet.apostador_nome || '-'
+      ).toUpperCase()}</span></div>
+      <div class="row"><span class="muted">TELEFONE:</span><span>${
+        bet.apostador_telefone || '-'
+      }</span></div>
+    </div>
+
+    <div class="section">
+      <div class="numbers-title">- NÚMEROS APOSTADOS -</div>
+      ${numbersHtml}
+      <div class="row" style="margin-top:10px;"><span class="muted">QTD NÚMEROS:</span><span>${
+        bets.length
+      }</span></div>
+      <div class="row"><span class="muted">VALOR UNIT:</span><span>R$ ${valorUnit.toFixed(
+        2,
+      )}</span></div>
+    </div>
+
+    <div class="total-box">
+      <div class="total-label">TOTAL</div>
+      <div class="total-value">R$ ${totalValue.toFixed(2)}</div>
+    </div>
+
+    <div class="prize-box">
+      <div class="muted" style="font-size:12px;">VALOR DO PRÊMIO</div>
+      <div style="font-size:18px;font-weight:700;">R$ ${potentialPrize.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+      })}</div>
+    </div>
+
+    <div class="footer">VALIDADE: 3 DIAS • BOA SORTE! • MILHARPRO.COM.BR</div>
+  </div>
+  <script>
+    window.onload = function() { window.print(); };
+  </script>
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank', 'width=420,height=600');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
+
+    toast.success('Abrindo comprovante para impressão...');
   };
 
   const handleGeneratePdf = () => {
-    window.print();
-    toast.success('Na janela de impressão, escolha "Salvar como PDF".');
-  };
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
 
-  const handleShare = async () => {
-    const numbersText = bets.map(b => b.numero).join('    ');
-    
+    const numbersText = bets.map((b) => b.numero).join('    ');
+
     const text = `
-═══════════════════════════════
-     COMPROVANTE DE APOSTA
-═══════════════════════════════
-${format(new Date(bet.data_hora), "dd/MM/yyyy HH:mm", { locale: ptBR })}
- 
-RECIBO:     ${receiptCode}
-JOGO:       ${bet.tipo_jogo.toUpperCase()}
-VENDEDOR:   ${bet.vendedor_nome?.toUpperCase()}
-APOSTADOR:  ${(bet.apostador_nome || '-').toUpperCase()}
-TELEFONE:   ${bet.apostador_telefone || '-'}
- 
+COMPROVANTE DE APOSTA
+Data: ${format(new Date(bet.data_hora), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+
+RECIBO: ${receiptCode.substring(0, 20)}
+JOGO: ${bet.tipo_jogo.toUpperCase()}
+VENDEDOR: ${(bet.vendedor_nome || '-').toUpperCase()}
+APOSTADOR: ${(bet.apostador_nome || '-').toUpperCase()}
+TELEFONE: ${bet.apostador_telefone || '-'}
+
 - NÚMEROS APOSTADOS -
 ${numbersText}
- 
-QTD NÚMEROS:          ${bets.length}
-VALOR UNIT:           R$ ${valorUnit.toFixed(2)}
- 
-TOTAL:                R$ ${totalValue.toFixed(2)}
 
-┌─────────────────────────────┐
-│      VALOR DO PRÊMIO        │
-│      R$ ${potentialPrize.toFixed(2).padStart(10)}        │
-└─────────────────────────────┘
+QTD NÚMEROS: ${bets.length}
+VALOR UNIT: R$ ${valorUnit.toFixed(2)}
+TOTAL: R$ ${totalValue.toFixed(2)}
 
-        BOA SORTE!
-      MILHARPRO.COM.BR
-═══════════════════════════════
-    `.trim();
+VALOR DO PRÊMIO: R$ ${potentialPrize.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+    })}
+`;
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Comprovante de Aposta',
-          text,
-        });
-      } catch {
-        navigator.clipboard.writeText(text);
-        toast.success('Comprovante copiado!');
-      }
-    } else {
-      navigator.clipboard.writeText(text);
-      toast.success('Comprovante copiado!');
-    }
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(11);
+    const marginLeft = 40;
+    const marginTop = 40;
+    const maxWidth = 515; // A4 width (595pt) - margins
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(lines, marginLeft, marginTop);
+
+    doc.save('comprovante-aposta.pdf');
+    toast.success('Comprovante salvo em PDF.');
   };
-
   return (
     <div className="animate-scale-in max-w-md mx-auto">
       {/* Receipt Card - Thermal Printer Style */}
@@ -213,15 +286,15 @@ TOTAL:                R$ ${totalValue.toFixed(2)}
           onClick={handlePrint}
         >
           <Printer className="w-4 h-4 mr-2" />
-          Imprimir
+          Imprimir comprovante
         </Button>
         <Button 
           variant="outline" 
           className="flex-1"
-          onClick={handleShare}
+          onClick={handleGeneratePdf}
         >
           <Share2 className="w-4 h-4 mr-2" />
-          Compartilhar
+          Salvar PDF
         </Button>
       </div>
 
