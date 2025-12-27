@@ -38,7 +38,6 @@ const mockSellers: User[] = [
     perfil: 'vendedor',
     comissao: 10,
     status: 'ativo',
-    limite_apostas: 5000,
     created_at: '2024-01-15T10:00:00Z',
   },
   {
@@ -48,7 +47,6 @@ const mockSellers: User[] = [
     perfil: 'vendedor',
     comissao: 12,
     status: 'ativo',
-    limite_apostas: 8000,
     created_at: '2024-01-20T14:30:00Z',
   },
   {
@@ -58,7 +56,6 @@ const mockSellers: User[] = [
     perfil: 'vendedor',
     comissao: 8,
     status: 'bloqueado',
-    limite_apostas: 3000,
     created_at: '2024-02-01T09:00:00Z',
   },
 ];
@@ -75,7 +72,6 @@ export function SellersManagement() {
     usuario: '',
     senha: '',
     comissao: 10,
-    limite_apostas: 5000,
   });
 
   const filteredSellers = sellers.filter(seller =>
@@ -107,7 +103,7 @@ export function SellersManagement() {
     
     setDialogOpen(false);
     setEditingSeller(null);
-    setFormData({ nome: '', usuario: '', senha: '', comissao: 10, limite_apostas: 5000 });
+    setFormData({ nome: '', usuario: '', senha: '', comissao: 10 });
   };
 
   const handleEdit = (seller: User) => {
@@ -117,7 +113,6 @@ export function SellersManagement() {
       usuario: seller.usuario,
       senha: '',
       comissao: seller.comissao,
-      limite_apostas: seller.limite_apostas || 5000,
     });
     setDialogOpen(true);
   };
@@ -208,18 +203,12 @@ export function SellersManagement() {
                     min="0"
                     max="100"
                     value={formData.comissao}
-                    onChange={(e) => setFormData(prev => ({ ...prev, comissao: Number(e.target.value) }))}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="limite">Limite (R$)</Label>
-                  <Input
-                    id="limite"
-                    type="number"
-                    min="0"
-                    value={formData.limite_apostas}
-                    onChange={(e) => setFormData(prev => ({ ...prev, limite_apostas: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        comissao: Number(e.target.value),
+                      }))
+                    }
                     required
                   />
                 </div>
