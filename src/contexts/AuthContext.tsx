@@ -62,11 +62,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (!profile) {
-      // Sem perfil ainda: mantém user nulo, mas sessão existe
-      setUser(null);
-      setRole(roleRow?.role ?? null);
+      // Sem perfil ainda: cria usuário básico a partir da sessão para permitir login, usando o cargo do backend
+      const appUser: User = {
+        id: authUserId,
+        nome: session.user.email ?? '',
+        usuario: session.user.email ?? '',
+        perfil: roleRow?.role ?? ('vendedor' as UserRole),
+        comissao: 0,
+        status: 'ativo',
+        created_at: session.user.created_at ?? new Date().toISOString(),
+      };
+
+      setUser(appUser);
+      setRole(roleRow?.role ?? ('vendedor' as UserRole));
       return;
     }
+
 
     const appUser: User = {
       id: profile.id,
