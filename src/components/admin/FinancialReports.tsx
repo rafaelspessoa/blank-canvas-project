@@ -67,14 +67,8 @@ export function FinancialReports() {
     month: 'Este Mês',
   };
 
-  // Simulated daily closings
-  const recentClosings = [
-    { date: subDays(new Date(), 1), total: 2500, commission: 250, profit: 2250 },
-    { date: subDays(new Date(), 2), total: 3200, commission: 320, profit: 2880 },
-    { date: subDays(new Date(), 3), total: 1800, commission: 180, profit: 1620 },
-    { date: subDays(new Date(), 4), total: 4100, commission: 410, profit: 3690 },
-    { date: subDays(new Date(), 5), total: 2900, commission: 290, profit: 2610 },
-  ];
+  // Sem fechamentos iniciais - app zerado para produção
+  const recentClosings: Array<{ date: Date; total: number; commission: number; profit: number }> = [];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -150,35 +144,41 @@ export function FinancialReports() {
           <h2 className="font-semibold text-foreground">Fechamentos Recentes</h2>
         </div>
         <div className="divide-y divide-border">
-          {recentClosings.map((closing, index) => (
-            <div 
-              key={index}
-              className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
-            >
-              <div>
-                <p className="font-medium text-foreground">
-                  {format(closing.date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Comissão: {closing.commission.toLocaleString('pt-BR', { 
-                    style: 'currency', 
-                    currency: 'BRL' 
-                  })}
-                </p>
+          {recentClosings.length > 0 ? (
+            recentClosings.map((closing, index) => (
+              <div 
+                key={index}
+                className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
+              >
+                <div>
+                  <p className="font-medium text-foreground">
+                    {format(closing.date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Comissão: {closing.commission.toLocaleString('pt-BR', { 
+                      style: 'currency', 
+                      currency: 'BRL' 
+                    })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-foreground">
+                    {closing.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </p>
+                  <p className="text-sm text-success">
+                    Lucro: {closing.profit.toLocaleString('pt-BR', { 
+                      style: 'currency', 
+                      currency: 'BRL' 
+                    })}
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-bold text-foreground">
-                  {closing.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </p>
-                <p className="text-sm text-success">
-                  Lucro: {closing.profit.toLocaleString('pt-BR', { 
-                    style: 'currency', 
-                    currency: 'BRL' 
-                  })}
-                </p>
-              </div>
+            ))
+          ) : (
+            <div className="p-8 text-center text-muted-foreground">
+              Nenhum fechamento registrado ainda
             </div>
-          ))}
+          )}
         </div>
       </div>
 
