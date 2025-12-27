@@ -56,21 +56,43 @@ export function SellersManagement() {
   const loadSellers = async () => {
     setIsLoading(true);
     try {
+      // Primeiro busca o perfil do usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      // Busca o profile do usuário atual para pegar o ID
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      // Busca todos os perfis exceto o do usuário atual
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles (role)
-        `)
-        .neq('id', (await supabase.auth.getUser()).data.user?.id);
+        .select('*')
+        .neq('id', currentProfile?.id || '');
 
       if (error) throw error;
 
-      const sellersData: User[] = profiles.map((p: any) => ({
+      // Busca os cargos de todos os perfis
+      const profileIds = profiles?.map(p => p.auth_user_id) || [];
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', profileIds);
+
+      // Mapeia os cargos por user_id
+      const rolesMap = new Map(roles?.map(r => [r.user_id, r.role]) || []);
+
+      const sellersData: User[] = (profiles || []).map((p: any) => ({
         id: p.id,
         nome: p.nome || '',
         usuario: p.usuario || '',
-        perfil: p.user_roles?.[0]?.role || 'vendedor',
+        perfil: rolesMap.get(p.auth_user_id) || 'vendedor',
         comissao: p.comissao || 0,
         status: p.status,
         created_at: p.created_at,
