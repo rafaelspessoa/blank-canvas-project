@@ -211,7 +211,7 @@ export function GamesManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="multiplicador">Multiplicador (Prêmio)</Label>
+                <Label htmlFor="multiplicador">Valor do Prêmio (R$)</Label>
                 <div className="relative">
                   <Trophy className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -219,13 +219,15 @@ export function GamesManagement() {
                     type="number"
                     min="1"
                     value={formData.multiplicador}
-                    onChange={(e) => setFormData(prev => ({ ...prev, multiplicador: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        multiplicador: Number(e.target.value),
+                      }))
+                    }
                     className="pl-9"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Aposta de R$1 = Prêmio de R$ {formData.multiplicador?.toLocaleString('pt-BR')}
-                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
