@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { BetsProvider } from '@/contexts/BetsContext';
 import { GamesProvider } from '@/contexts/GamesContext';
+import { BlockedNumbersProvider } from '@/contexts/BlockedNumbersContext';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
 
@@ -15,18 +16,20 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <GamesProvider>
-        <BetsProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner position="top-center" richColors />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </BetsProvider>
+        <BlockedNumbersProvider>
+          <BetsProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner position="top-center" richColors />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </BetsProvider>
+        </BlockedNumbersProvider>
       </GamesProvider>
     </AuthProvider>
   </QueryClientProvider>

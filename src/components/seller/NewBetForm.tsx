@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBets } from '@/contexts/BetsContext';
 import { useGames } from '@/contexts/GamesContext';
+import { useBlockedNumbers } from '@/contexts/BlockedNumbersContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +39,7 @@ export function NewBetForm() {
   const { user } = useAuth();
   const { addBet } = useBets();
   const { games } = useGames();
+  const { getBlockedNumbersByGame } = useBlockedNumbers();
   const activeGames = games.filter((game) => game.ativo);
   
   const [selectedGame, setSelectedGame] = useState<GameType>('milhar');
@@ -163,6 +165,20 @@ export function NewBetForm() {
 
   const handleSubmit = () => {
     if (!canSubmit || !user) return;
+
+    if (!selectedRegisteredGameId) {
+      toast.error('Selecione um jogo antes de finalizar a aposta.');
+      return;
+    }
+
+    const blockedForGame = getBlockedNumbersByGame(selectedRegisteredGameId);
+    const blockedSet = new Set(blockedForGame.map((b) => b.numero));
+
+    const hasBlocked = numbers.some((entry) => blockedSet.has(entry.numero));
+    if (hasBlocked) {
+      toast.error('Há número(s) bloqueado(s) nesta aposta. Remova-os para continuar.');
+      return;
+    }
  
     const hasInvalidValue = numbers.some((entry) => !entry.valor || entry.valor <= 0);
     if (hasInvalidValue) {

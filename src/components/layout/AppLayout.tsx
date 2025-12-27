@@ -31,6 +31,7 @@ const adminNavItems: NavItem[] = [
   { icon: Receipt, label: 'Apostas', id: 'apostas' },
   { icon: DollarSign, label: 'Financeiro', id: 'financeiro' },
   { icon: Settings, label: 'Configurações', id: 'configuracoes' },
+  { icon: Gamepad2, label: 'Números Bloqueados', id: 'numeros-bloqueados' },
 ];
 
 const vendedorNavItems: NavItem[] = [
