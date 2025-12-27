@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'vendedor';
+export type UserRole = 'admin' | 'gerente' | 'vendedor';
 
 export type GameType = 'milhar' | 'centena' | 'dezena';
 

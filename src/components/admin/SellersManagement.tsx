@@ -17,7 +17,8 @@ import {
   Ban, 
   CheckCircle,
   Search,
-  MoreVertical
+  MoreVertical,
+  ShieldCheck
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -126,9 +127,13 @@ export function SellersManagement() {
     toast.success('Status atualizado!');
   };
 
-  const handleDelete = (id: string) => {
-    setSellers(prev => prev.filter(s => s.id !== id));
-    toast.success('Vendedor removido!');
+  const handleToggleRole = (id: string) => {
+    setSellers(prev => prev.map(s =>
+      s.id === id
+        ? { ...s, perfil: s.perfil === 'vendedor' ? 'gerente' : 'vendedor' }
+        : s
+    ));
+    toast.success('Perfil atualizado!');
   };
 
   return (
@@ -295,12 +300,9 @@ export function SellersManagement() {
                       </>
                     )}
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleDelete(seller.id)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Excluir
+                  <DropdownMenuItem onClick={() => handleToggleRole(seller.id)}>
+                    <ShieldCheck className="w-4 h-4 mr-2" />
+                    {seller.perfil === 'vendedor' ? 'Tornar Gerente' : 'Tornar Vendedor'}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
