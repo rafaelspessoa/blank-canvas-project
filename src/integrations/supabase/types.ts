@@ -14,6 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
+      bets: {
+        Row: {
+          apostador_nome: string | null
+          apostador_telefone: string | null
+          codigo: string
+          data_hora: string
+          id: string
+          numero: string
+          status: string
+          tipo_jogo: string
+          valor: number
+          vendedor_id: string
+        }
+        Insert: {
+          apostador_nome?: string | null
+          apostador_telefone?: string | null
+          codigo: string
+          data_hora?: string
+          id?: string
+          numero: string
+          status?: string
+          tipo_jogo: string
+          valor: number
+          vendedor_id: string
+        }
+        Update: {
+          apostador_nome?: string | null
+          apostador_telefone?: string | null
+          codigo?: string
+          data_hora?: string
+          id?: string
+          numero?: string
+          status?: string
+          tipo_jogo?: string
+          valor?: number
+          vendedor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bets_vendedor_id_fkey"
+            columns: ["vendedor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blocked_numbers: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          numero: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          numero: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          numero?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_numbers_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          horario_abertura: string
+          horario_fechamento: string
+          id: string
+          multiplicador: number
+          nome: string
+          tipo: string
+          valor_maximo: number
+          valor_minimo: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          horario_abertura: string
+          horario_fechamento: string
+          id?: string
+          multiplicador: number
+          nome: string
+          tipo: string
+          valor_maximo: number
+          valor_minimo: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          horario_abertura?: string
+          horario_fechamento?: string
+          id?: string
+          multiplicador?: number
+          nome?: string
+          tipo?: string
+          valor_maximo?: number
+          valor_minimo?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           auth_user_id: string

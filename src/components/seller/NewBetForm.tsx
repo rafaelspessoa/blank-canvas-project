@@ -9,13 +9,13 @@ import { Label } from '@/components/ui/label';
 import { GameType, Bet } from '@/types';
 import { GameTypeBadge } from '@/components/shared/GameTypeBadge';
 import {
-  Check, 
-  Delete, 
+  Check,
+  Delete,
   RotateCcw,
   Shuffle,
   Plus,
   X,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -41,9 +41,11 @@ export function NewBetForm() {
   const { games } = useGames();
   const { getBlockedNumbersByGame } = useBlockedNumbers();
   const activeGames = games.filter((game) => game.ativo);
-  
+
   const [selectedGame, setSelectedGame] = useState<GameType>('milhar');
-  const [selectedRegisteredGameId, setSelectedRegisteredGameId] = useState<string | null>(null);
+  const [selectedRegisteredGameId, setSelectedRegisteredGameId] = useState<string | null>(
+    null
+  );
   const [numero, setNumero] = useState('');
   const [valor, setValor] = useState('');
   const [bettorName, setBettorName] = useState('');
@@ -51,10 +53,10 @@ export function NewBetForm() {
   const [numbers, setNumbers] = useState<NumberEntry[]>([]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastBets, setLastBets] = useState<Bet[]>([]);
-  
+
   const numeroInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedGameInfo = gameTypes.find(g => g.type === selectedGame)!;
+  const selectedGameInfo = gameTypes.find((g) => g.type === selectedGame)!;
   const isNumberValid = numero.length === selectedGameInfo.digits && /^\d+$/.test(numero);
   const isValueValid = parseFloat(valor) > 0;
   const canAddNumber = isNumberValid && isValueValid;
@@ -89,15 +91,15 @@ export function NewBetForm() {
       toast.error('Informe um valor antes de gerar número aleatório');
       return;
     }
-    
+
     const randomNum = generateRandomNumber();
     const newEntry: NumberEntry = {
       id: Date.now().toString(),
       numero: randomNum,
       valor: currentValor,
     };
-    
-    setNumbers(prev => [...prev, newEntry]);
+
+    setNumbers((prev) => [...prev, newEntry]);
     toast.success(`Número ${randomNum} adicionado!`);
   };
 
@@ -105,7 +107,7 @@ export function NewBetForm() {
     if (numero.length < selectedGameInfo.digits) {
       const newNumero = numero + digit;
       setNumero(newNumero);
-      
+
       if (newNumero.length === selectedGameInfo.digits) {
         setTimeout(() => {
           document.getElementById('valor-input')?.focus();
@@ -115,7 +117,7 @@ export function NewBetForm() {
   };
 
   const handleDeleteDigit = () => {
-    setNumero(prev => prev.slice(0, -1));
+    setNumero((prev) => prev.slice(0, -1));
   };
 
   const handleClear = () => {
@@ -126,7 +128,7 @@ export function NewBetForm() {
   const handleQuickValue = (value: number) => {
     setValor(value.toString());
   };
- 
+
   const handleAddNumber = () => {
     if (!isNumberValid) {
       toast.error(`O número precisa ter ${selectedGameInfo.digits} dígitos`);
@@ -144,18 +146,18 @@ export function NewBetForm() {
       toast.error('Este número foi vendido.');
       return;
     }
- 
+
     const valorNumero = isValueValid ? parseFloat(valor) : 0;
- 
+
     const newEntry: NumberEntry = {
       id: Date.now().toString(),
       numero,
       valor: valorNumero,
     };
- 
+
     setNumbers((prev) => [...prev, newEntry]);
     setNumero('');
- 
+
     toast.success(
       valorNumero > 0
         ? `Número ${numero} adicionado com valor R$ ${valorNumero.toFixed(2)}`
@@ -164,7 +166,7 @@ export function NewBetForm() {
     numeroInputRef.current?.focus();
   };
   const handleRemoveNumber = (id: string) => {
-    setNumbers(prev => prev.filter(n => n.id !== id));
+    setNumbers((prev) => prev.filter((n) => n.id !== id));
   };
 
   const handleClearAll = () => {
@@ -174,7 +176,7 @@ export function NewBetForm() {
     toast.info('Lista limpa');
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!canSubmit || !user) return;
 
     if (!selectedRegisteredGameId) {
@@ -190,35 +192,41 @@ export function NewBetForm() {
       toast.error('Há número(s) bloqueado(s) nesta aposta. Remova-os para continuar.');
       return;
     }
- 
+
     const hasInvalidValue = numbers.some((entry) => !entry.valor || entry.valor <= 0);
     if (hasInvalidValue) {
       toast.error('Defina um valor maior que zero para todos os números antes de salvar.');
       return;
     }
- 
+
     const bets: Bet[] = [];
-    
-    numbers.forEach((entry) => {
-      const newBet = addBet({
-        vendedor_id: user.id,
-        vendedor_nome: user.nome,
-        tipo_jogo: selectedGame,
-        numero: entry.numero,
-        valor: entry.valor,
-        apostador_nome: bettorName || undefined,
-        apostador_telefone: bettorPhone || undefined,
-      });
-      bets.push(newBet);
-    });
- 
+
+    try {
+      for (const entry of numbers) {
+        const newBet = await addBet({
+          vendedor_id: user.id,
+          vendedor_nome: user.nome,
+          tipo_jogo: selectedGame,
+          numero: entry.numero,
+          valor: entry.valor,
+          apostador_nome: bettorName || undefined,
+          apostador_telefone: bettorPhone || undefined,
+        });
+        bets.push(newBet);
+      }
+    } catch (error) {
+      console.error('Erro ao registrar aposta(s):', error);
+      toast.error('Erro ao registrar aposta. Tente novamente.');
+      return;
+    }
+
     setLastBets(bets);
     setShowReceipt(true);
-    
+
     toast.success(`${numbers.length} aposta(s) registrada(s)!`, {
       description: `Total: R$ ${totalValue.toFixed(2)}`,
     });
- 
+
     // Reset form
     setNumbers([]);
     setNumero('');
@@ -227,13 +235,13 @@ export function NewBetForm() {
 
   if (showReceipt && lastBets.length > 0) {
     return (
-      <BetReceipt 
-        bet={lastBets[0]} 
+      <BetReceipt
+        bet={lastBets[0]}
         allBets={lastBets}
         onClose={() => {
           setShowReceipt(false);
           setLastBets([]);
-        }} 
+        }}
       />
     );
   }
@@ -258,217 +266,280 @@ export function NewBetForm() {
                 onChange={(e) => {
                   const id = e.target.value || null;
                   setSelectedRegisteredGameId(id);
-
-                  const game = activeGames.find((g) => g.id === id);
-                  if (game) {
-                    setSelectedGame(game.tipo);
-                  }
-
-                  setNumero('');
-                  setNumbers([]);
                 }}
               >
-                <option value="" disabled>
-                  Escolha um jogo disponível
-                </option>
-                {activeGames.map((game) => {
-                  const gameInfo = gameTypes.find((g) => g.type === game.tipo)!;
-                  return (
-                    <option key={game.id} value={game.id}>
-                      {game.nome} • {gameInfo.label} ({gameInfo.digits} dígitos)
-                    </option>
-                  );
-                })}
+                <option value="">Selecione um jogo registrado</option>
+                {activeGames.map((game) => (
+                  <option key={game.id} value={game.id}>
+                    {game.nome}
+                  </option>
+                ))}
               </select>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">
-              Nenhum jogo cadastrado encontrado. Cadastre jogos na área administrativa.
+            <p className="text-sm text-muted-foreground">
+              Nenhum jogo cadastrado. Peça ao administrador para configurar os jogos.
             </p>
           )}
         </div>
 
-        {/* Nome e Telefone do Apostador */}
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Nome do Apostador</Label>
+            <Label htmlFor="bettorName" className="text-sm text-muted-foreground">
+              Nome do Apostador (opcional)
+            </Label>
             <Input
-              placeholder="Digite o nome do apostador"
+              id="bettorName"
+              type="text"
+              placeholder="Nome"
               value={bettorName}
               onChange={(e) => setBettorName(e.target.value)}
             />
           </div>
+
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Telefone do Apostador</Label>
+            <Label htmlFor="bettorPhone" className="text-sm text-muted-foreground">
+              Telefone (opcional)
+            </Label>
             <Input
-              placeholder="(00) 00000-0000"
-              inputMode="tel"
+              id="bettorPhone"
+              type="tel"
+              placeholder="(99) 99999-9999"
               value={bettorPhone}
               onChange={(e) => setBettorPhone(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Número da Aposta */}
-        <div className="space-y-2">
+        <div className="space-y-4">
           <Label className="text-sm text-muted-foreground">
-            Números ({selectedGameInfo.digits} dígitos)
+            Número para{' '}
+            <span className="font-medium text-foreground">{selectedGameInfo.label}</span>
           </Label>
-          <div className="flex gap-2">
-            <Input
-              ref={numeroInputRef}
-              type="text"
-              inputMode="numeric"
-              maxLength={selectedGameInfo.digits}
-              placeholder={''.padStart(selectedGameInfo.digits, '0')}
-              value={numero}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, selectedGameInfo.digits);
-                setNumero(value);
-              }}
-              className="flex-1 text-center font-mono text-lg"
-              aria-label="Número da aposta"
-            />
+          <div className="flex items-center space-x-3">
+            <div className="relative flex-1">
+              <Input
+                ref={numeroInputRef}
+                type="text"
+                placeholder={`Informe o número com ${selectedGameInfo.digits} dígitos`}
+                value={numero}
+                maxLength={selectedGameInfo.digits}
+                className="pl-11"
+                onChange={(e) => setNumero(e.target.value)}
+              />
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
+                <GameTypeBadge type={selectedGame} />
+              </div>
+            </div>
+            <Button type="button" variant="outline" size="icon" onClick={handleRandomNumber}>
+              <Shuffle className="w-4 h-4" />
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={handleClear}>
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Limpar
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-5 gap-2">
             <Button
               type="button"
-              variant="secondary"
-              onClick={handleAddNumber}
-              className="gap-1 px-4"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('1')}
             >
-              <Plus className="w-4 h-4" />
+              1
             </Button>
             <Button
               type="button"
-              variant="outline"
-              onClick={handleRandomNumber}
-              className="px-3"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('2')}
+            >
+              2
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('3')}
+            >
+              3
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('4')}
+            >
+              4
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('5')}
+            >
+              5
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('6')}
+            >
+              6
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('7')}
+            >
+              7
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('8')}
+            >
+              8
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('9')}
+            >
+              9
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => handleNumberInput('0')}
+            >
+              0
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={handleDeleteDigit}
+            >
+              <Delete className="w-4 h-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="justify-center h-10"
+              onClick={() => {
+                setNumero('');
+                handleRandomNumber();
+              }}
             >
               <Shuffle className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
-        {/* Valor por Número */}
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">Valor por Número (R$)</Label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-              R$
-            </span>
+        <div className="border rounded-md border-border p-4">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="valor-input" className="text-sm text-muted-foreground">
+              Valor (R$)
+            </Label>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              onClick={() => handleAddRandomWithValue()}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Com valor aleatório
+            </Button>
+          </div>
+          <div className="flex items-center space-x-3 mt-2">
             <Input
               id="valor-input"
               type="number"
-              inputMode="decimal"
+              placeholder="0,00"
+              className="w-full"
               value={valor}
               onChange={(e) => setValor(e.target.value)}
-              placeholder="0,00"
-              className="pl-10 text-base h-11"
-              min="0"
-              step="0.5"
             />
-          </div>
-          <div className="flex flex-wrap gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={!numbers.length}
-              onClick={() => {
-                if (!isValueValid) {
-                  toast.error('Informe um valor válido para aplicar em todos os números.');
-                  return;
-                }
-                const valorNumero = parseFloat(valor);
-                setNumbers((prev) => prev.map((entry) => ({ ...entry, valor: valorNumero })));
-                toast.success('Valor aplicado em todos os números.');
-              }}
-            >
-              Aplicar valor em todos os números
+            <Button type="button" variant="secondary" size="sm" onClick={handleAddNumber}>
+              Adicionar
             </Button>
+          </div>
+
+          <div className="flex items-center space-x-2 mt-3">
+            {quickValues.map((value) => (
+              <Button
+                key={value}
+                type="button"
+                variant="outline"
+                size="xs"
+                onClick={() => handleQuickValue(value)}
+              >
+                R$ {value.toFixed(2)}
+              </Button>
+            ))}
           </div>
         </div>
 
-        {/* Lista de Números */}
         {numbers.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm text-muted-foreground">
-                Números adicionados ({numbers.length})
-              </Label>
-              <span className="text-sm font-medium text-foreground">
-                Total: R$ {totalValue.toFixed(2)}
-              </span>
+              <h3 className="text-md font-semibold text-foreground">
+                Números adicionados <span className="text-muted-foreground">({numbers.length})</span>
+              </h3>
+              <Button type="button" variant="link" size="sm" onClick={handleClearAll}>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Limpar tudo
+              </Button>
             </div>
-            <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-              {numbers.map((entry, index) => (
-                <div
-                  key={entry.id}
-                  className="flex items-center justify-between rounded-md bg-muted/60 px-3 py-2"
+
+            <ul className="space-y-2">
+              {numbers.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between rounded-md border border-border bg-card px-4 py-2 text-sm"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground w-5">{index + 1}.</span>
-                    <span className="font-mono font-semibold text-foreground text-base">
-                      {entry.numero}
-                    </span>
+                  <div className="flex items-center space-x-3">
+                    <span className="font-bold text-foreground">{item.numero}</span>
+                    {item.valor > 0 && (
+                      <span className="text-muted-foreground">R$ {item.valor.toFixed(2)}</span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-accent">
-                      R$ {entry.valor.toFixed(2)}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveNumber(entry.id)}
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                    onClick={() => handleRemoveNumber(item.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </li>
               ))}
+            </ul>
+
+            <div className="flex items-center justify-between font-semibold text-foreground">
+              Total da Aposta: <span>R$ {totalValue.toFixed(2)}</span>
             </div>
+
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              disabled={!canSubmit}
+              onClick={handleSubmit}
+            >
+              Finalizar Aposta
+            </Button>
           </div>
         )}
       </div>
-
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          className="w-full"
-          onClick={() => {
-            setNumbers([]);
-            setNumero('');
-            setValor('');
-            setSelectedRegisteredGameId(null);
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          type="button"
-          variant="accent"
-          size="lg"
-          className="w-full"
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-        >
-          <Check className="w-5 h-5 mr-2" />
-          Salvar Aposta
-        </Button>
-      </div>
-
-      {/* Resumo */}
-      {canSubmit && (
-        <div className="text-center text-muted-foreground animate-fade-in text-sm">
-          <p>
-            <GameTypeBadge type={selectedGame} size="sm" /> • {numbers.length} número(s) • Total{' '}
-            <span className="font-bold text-foreground">R$ {totalValue.toFixed(2)}</span>
-          </p>
-        </div>
-      )}
     </div>
   );
 }

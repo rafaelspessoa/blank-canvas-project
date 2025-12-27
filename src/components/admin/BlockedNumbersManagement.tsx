@@ -22,11 +22,9 @@ export function BlockedNumbersManagement() {
   const [numero, setNumero] = useState('');
 
   const selectedGame = games.find((g) => g.id === selectedGameId) || null;
-  const blockedForGame = selectedGameId
-    ? getBlockedNumbersByGame(selectedGameId)
-    : [];
+  const blockedForGame = selectedGameId ? getBlockedNumbersByGame(selectedGameId) : [];
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!selectedGame) {
       toast.error('Selecione um jogo primeiro');
       return;
@@ -45,7 +43,7 @@ export function BlockedNumbersManagement() {
       return;
     }
 
-    addBlockedNumber(selectedGame.id, clean);
+    await addBlockedNumber(selectedGame.id, clean);
     toast.success(`Número ${clean} bloqueado para o jogo ${selectedGame.nome}`);
     setNumero('');
   };
@@ -53,9 +51,7 @@ export function BlockedNumbersManagement() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-          Números Bloqueados
-        </h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Números Bloqueados</h1>
         <p className="text-muted-foreground mt-1">
           Segure números específicos por jogo para impedir novas apostas nesses números.
         </p>
@@ -138,7 +134,9 @@ export function BlockedNumbersManagement() {
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                    onClick={() => removeBlockedNumber(item.id)}
+                    onClick={async () => {
+                      await removeBlockedNumber(item.id);
+                    }}
                   >
                     ×
                   </Button>
