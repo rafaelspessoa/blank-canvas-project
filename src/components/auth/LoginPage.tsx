@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 export function LoginPage() {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const [userOrEmail, setUserOrEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,12 +19,12 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      const success = await login(email, senha);
+      const success = await login(userOrEmail, senha);
 
       if (success) {
         toast.success('Login realizado com sucesso!');
       } else {
-        setError('Email ou senha incorretos');
+        setError('Usuário/email ou senha incorretos');
       }
     } catch (err) {
       console.error(err);
@@ -57,18 +57,18 @@ export function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="userOrEmail">Usuário ou Email</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seuemail@exemplo.com"
+                  id="userOrEmail"
+                  type="text"
+                  value={userOrEmail}
+                  onChange={(e) => setUserOrEmail(e.target.value)}
+                  placeholder="usuario ou email@exemplo.com"
                   className="pl-10 h-12"
                   required
-                  autoComplete="email"
+                  autoComplete="username"
                 />
               </div>
             </div>

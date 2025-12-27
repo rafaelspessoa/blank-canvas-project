@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, senha: string) => Promise<boolean>;
+  login: (userOrEmail: string, senha: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isAdmin: boolean;
   role: UserRole | null;
@@ -128,11 +128,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = async (email: string, senha: string): Promise<boolean> => {
+  const login = async (userOrEmail: string, senha: string): Promise<boolean> => {
     setIsLoading(true);
     try {
+      // Se não contiver @, buscar o email na tabela profiles
+      let emailToUse = userOrEmail;
+      if (!userOrEmail.includes('@')) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('usuario', userOrEmail)
+          .maybeSingle();
+        
+        if (profile?.email) {
+          emailToUse = profile.email;
+        } else {
+          return false;
+        }
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: emailToUse,
         password: senha,
       });
 

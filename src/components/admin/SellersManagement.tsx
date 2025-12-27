@@ -71,6 +71,7 @@ export function SellersManagement() {
   const [formData, setFormData] = useState({
     nome: '',
     usuario: '',
+    email: '',
     senha: '',
     comissao: 10,
   });
@@ -104,7 +105,7 @@ export function SellersManagement() {
     
     setDialogOpen(false);
     setEditingSeller(null);
-    setFormData({ nome: '', usuario: '', senha: '', comissao: 10 });
+    setFormData({ nome: '', usuario: '', email: '', senha: '', comissao: 10 });
   };
 
   const handleEdit = (seller: User) => {
@@ -112,6 +113,7 @@ export function SellersManagement() {
     setFormData({
       nome: seller.nome,
       usuario: seller.usuario,
+      email: '',
       senha: '',
       comissao: seller.comissao,
     });
@@ -184,6 +186,17 @@ export function SellersManagement() {
                   onChange={(e) => setFormData(prev => ({ ...prev, usuario: e.target.value }))}
                   placeholder="Ex: joao.silva"
                   required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Ex: joao@exemplo.com"
+                  required={!editingSeller}
                 />
               </div>
               <div className="space-y-2">
