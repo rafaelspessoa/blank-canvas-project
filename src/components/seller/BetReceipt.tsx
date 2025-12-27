@@ -119,7 +119,7 @@ export function BetReceipt({ bet, allBets, onClose }: BetReceiptProps) {
       })}</div>
     </div>
 
-    <div class="footer">VALIDADE: 3 DIAS • BOA SORTE! • MILHARPRO.COM.BR</div>
+    <div class="footer">ESSE BILHETE VALE ATÉ AS 16H DO PROXIMO DIA • BOA SORTE!</div>
   </div>
   <script>
     window.onload = function() { window.print(); };
@@ -269,9 +269,8 @@ VALOR DO PRÊMIO: R$ ${potentialPrize.toLocaleString('pt-BR', {
 
         {/* Footer */}
         <div className="px-4 pb-4 text-center space-y-1">
-          <p className="text-xs text-gray-500">VALIDADE: 3 DIAS</p>
+          <p className="text-xs text-gray-500 font-bold">ESSE BILHETE VALE ATÉ AS 16H DO PROXIMO DIA</p>
           <p className="text-lg font-bold tracking-wider">BOA SORTE!</p>
-          <p className="text-xs text-gray-400">MILHARPRO.COM.BR</p>
         </div>
 
         {/* Dotted bottom edge */}
