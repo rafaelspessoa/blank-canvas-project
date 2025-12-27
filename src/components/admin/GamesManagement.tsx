@@ -228,6 +228,14 @@ export function GamesManagement() {
                     className="pl-9"
                   />
                 </div>
+                {typeof formData.multiplicador === 'number' && !Number.isNaN(formData.multiplicador) && (
+                  <p className="text-xs text-muted-foreground">
+                    {formData.multiplicador.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
