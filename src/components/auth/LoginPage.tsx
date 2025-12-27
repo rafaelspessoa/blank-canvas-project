@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 export function LoginPage() {
   const { login } = useAuth();
-  const [usuario, setUsuario] = useState('');
+  const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,14 +19,15 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      const success = await login(usuario, senha);
-      
+      const success = await login(email, senha);
+
       if (success) {
         toast.success('Login realizado com sucesso!');
       } else {
-        setError('Usuário ou senha incorretos');
+        setError('Email ou senha incorretos');
       }
     } catch (err) {
+      console.error(err);
       setError('Erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -56,18 +57,18 @@ export function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="usuario">Usuário</Label>
+              <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
-                  id="usuario"
-                  type="text"
-                  value={usuario}
-                  onChange={(e) => setUsuario(e.target.value)}
-                  placeholder="Digite seu usuário"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seuemail@exemplo.com"
                   className="pl-10 h-12"
                   required
-                  autoComplete="username"
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -106,23 +107,6 @@ export function LoginPage() {
               )}
             </Button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-border">
-            <p className="text-sm text-muted-foreground text-center mb-3">
-              Credenciais de demonstração:
-            </p>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="p-3 rounded-lg bg-muted/50">
-                <p className="font-medium text-foreground">Admin</p>
-                <p className="text-muted-foreground">admin / admin123</p>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50">
-                <p className="font-medium text-foreground">Vendedor</p>
-                <p className="text-muted-foreground">joao / 123456</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
@@ -133,3 +117,4 @@ export function LoginPage() {
     </div>
   );
 }
+
