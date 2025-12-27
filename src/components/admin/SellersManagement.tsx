@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,43 +29,14 @@ import {
 import { User } from '@/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-
-// Mock sellers data
-const mockSellers: User[] = [
-  {
-    id: '2',
-    nome: 'João Vendedor',
-    usuario: 'joao',
-    perfil: 'vendedor',
-    comissao: 10,
-    status: 'ativo',
-    created_at: '2024-01-15T10:00:00Z',
-  },
-  {
-    id: '3',
-    nome: 'Maria Vendedora',
-    usuario: 'maria',
-    perfil: 'vendedor',
-    comissao: 12,
-    status: 'ativo',
-    created_at: '2024-01-20T14:30:00Z',
-  },
-  {
-    id: '4',
-    nome: 'Pedro Santos',
-    usuario: 'pedro',
-    perfil: 'vendedor',
-    comissao: 8,
-    status: 'bloqueado',
-    created_at: '2024-02-01T09:00:00Z',
-  },
-];
+import { supabase } from '@/integrations/supabase/client';
 
 export function SellersManagement() {
-  const [sellers, setSellers] = useState<User[]>(mockSellers);
+  const [sellers, setSellers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSeller, setEditingSeller] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -76,36 +47,95 @@ export function SellersManagement() {
     comissao: 10,
   });
 
+
+  // Carregar vendedores do backend
+  useEffect(() => {
+    loadSellers();
+  }, []);
+
+  const loadSellers = async () => {
+    setIsLoading(true);
+    try {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select(`
+          *,
+          user_roles (role)
+        `)
+        .neq('id', (await supabase.auth.getUser()).data.user?.id);
+
+      if (error) throw error;
+
+      const sellersData: User[] = profiles.map((p: any) => ({
+        id: p.id,
+        nome: p.nome || '',
+        usuario: p.usuario || '',
+        perfil: p.user_roles?.[0]?.role || 'vendedor',
+        comissao: p.comissao || 0,
+        status: p.status,
+        created_at: p.created_at,
+      }));
+
+      setSellers(sellersData);
+    } catch (error) {
+      console.error('Erro ao carregar vendedores:', error);
+      toast.error('Erro ao carregar vendedores');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredSellers = sellers.filter(seller =>
     seller.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     seller.usuario.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editingSeller) {
-      setSellers(prev => prev.map(s => 
-        s.id === editingSeller.id 
-          ? { ...s, ...formData }
-          : s
-      ));
-      toast.success('Vendedor atualizado com sucesso!');
-    } else {
-      const newSeller: User = {
-        id: Date.now().toString(),
-        ...formData,
-        perfil: 'vendedor',
-        status: 'ativo',
-        created_at: new Date().toISOString(),
-      };
-      setSellers(prev => [...prev, newSeller]);
-      toast.success('Vendedor criado com sucesso!');
+    setIsLoading(true);
+
+    try {
+      if (editingSeller) {
+        // Atualizar vendedor
+        const { error } = await supabase.functions.invoke('manage-seller', {
+          body: {
+            action: 'update',
+            data: {
+              id: editingSeller.id,
+              ...formData,
+              perfil: editingSeller.perfil,
+            },
+          },
+        });
+
+        if (error) throw error;
+        toast.success('Vendedor atualizado com sucesso!');
+      } else {
+        // Criar vendedor
+        const { error } = await supabase.functions.invoke('manage-seller', {
+          body: {
+            action: 'create',
+            data: {
+              ...formData,
+              perfil: 'vendedor',
+            },
+          },
+        });
+
+        if (error) throw error;
+        toast.success('Vendedor criado com sucesso!');
+      }
+
+      await loadSellers();
+      setDialogOpen(false);
+      setEditingSeller(null);
+      setFormData({ nome: '', usuario: '', email: '', senha: '', comissao: 10 });
+    } catch (error: any) {
+      console.error('Erro ao salvar vendedor:', error);
+      toast.error(error.message || 'Erro ao salvar vendedor');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setDialogOpen(false);
-    setEditingSeller(null);
-    setFormData({ nome: '', usuario: '', email: '', senha: '', comissao: 10 });
   };
 
   const handleEdit = (seller: User) => {
@@ -120,22 +150,75 @@ export function SellersManagement() {
     setDialogOpen(true);
   };
 
-  const handleToggleStatus = (id: string) => {
-    setSellers(prev => prev.map(s => 
-      s.id === id 
-        ? { ...s, status: s.status === 'ativo' ? 'bloqueado' : 'ativo' }
-        : s
-    ));
-    toast.success('Status atualizado!');
+  const handleToggleStatus = async (id: string) => {
+    try {
+      const seller = sellers.find(s => s.id === id);
+      if (!seller) return;
+
+      const { error } = await supabase.functions.invoke('manage-seller', {
+        body: {
+          action: 'update',
+          data: {
+            id,
+            status: seller.status === 'ativo' ? 'bloqueado' : 'ativo',
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      await loadSellers();
+      toast.success('Status atualizado!');
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      toast.error('Erro ao atualizar status');
+    }
   };
 
-  const handleToggleRole = (id: string) => {
-    setSellers(prev => prev.map(s =>
-      s.id === id
-        ? { ...s, perfil: s.perfil === 'vendedor' ? 'gerente' : 'vendedor' }
-        : s
-    ));
-    toast.success('Perfil atualizado!');
+  const handleToggleRole = async (id: string) => {
+    try {
+      const seller = sellers.find(s => s.id === id);
+      if (!seller) return;
+
+      const { error } = await supabase.functions.invoke('manage-seller', {
+        body: {
+          action: 'update',
+          data: {
+            id,
+            perfil: seller.perfil === 'vendedor' ? 'gerente' : 'vendedor',
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      await loadSellers();
+      toast.success('Perfil atualizado!');
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      toast.error('Erro ao atualizar perfil');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este vendedor?')) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('manage-seller', {
+        body: {
+          action: 'delete',
+          data: { id },
+        },
+      });
+
+      if (error) throw error;
+
+      await loadSellers();
+      toast.success('Vendedor removido!');
+    } catch (error) {
+      console.error('Erro ao remover vendedor:', error);
+      toast.error('Erro ao remover vendedor');
+    }
   };
 
   return (
@@ -243,8 +326,8 @@ export function SellersManagement() {
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" variant="accent" className="flex-1">
-                  {editingSeller ? 'Salvar' : 'Criar'}
+                <Button type="submit" variant="accent" className="flex-1" disabled={isLoading}>
+                  {isLoading ? 'Salvando...' : (editingSeller ? 'Salvar' : 'Criar')}
                 </Button>
               </div>
             </form>
@@ -264,8 +347,13 @@ export function SellersManagement() {
       </div>
 
       {/* Sellers Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredSellers.map((seller) => (
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Carregando vendedores...</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredSellers.map((seller) => (
           <div 
             key={seller.id}
             className={cn(
@@ -353,12 +441,13 @@ export function SellersManagement() {
             </div>
           </div>
         ))}
+        
+        {filteredSellers.length === 0 && !isLoading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Nenhum vendedor encontrado</p>
+          </div>
+        )}
       </div>
-
-      {filteredSellers.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Nenhum vendedor encontrado</p>
-        </div>
       )}
     </div>
   );
