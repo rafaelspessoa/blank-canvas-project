@@ -132,6 +132,18 @@ export function NewBetForm() {
       toast.error(`O número precisa ter ${selectedGameInfo.digits} dígitos`);
       return;
     }
+
+    if (!selectedRegisteredGameId) {
+      toast.error('Selecione um jogo antes de adicionar o número.');
+      return;
+    }
+
+    const blockedForGame = getBlockedNumbersByGame(selectedRegisteredGameId);
+    const blockedSet = new Set(blockedForGame.map((b) => b.numero));
+    if (blockedSet.has(numero)) {
+      toast.error('Este número foi vendido.');
+      return;
+    }
  
     const valorNumero = isValueValid ? parseFloat(valor) : 0;
  
@@ -151,7 +163,6 @@ export function NewBetForm() {
     );
     numeroInputRef.current?.focus();
   };
-
   const handleRemoveNumber = (id: string) => {
     setNumbers(prev => prev.filter(n => n.id !== id));
   };
