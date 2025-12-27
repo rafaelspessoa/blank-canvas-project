@@ -19,6 +19,7 @@ export type Database = {
           auth_user_id: string
           comissao: number | null
           created_at: string
+          email: string | null
           id: string
           nome: string | null
           status: string
@@ -28,6 +29,7 @@ export type Database = {
           auth_user_id: string
           comissao?: number | null
           created_at?: string
+          email?: string | null
           id?: string
           nome?: string | null
           status?: string
@@ -37,6 +39,7 @@ export type Database = {
           auth_user_id?: string
           comissao?: number | null
           created_at?: string
+          email?: string | null
           id?: string
           nome?: string | null
           status?: string
