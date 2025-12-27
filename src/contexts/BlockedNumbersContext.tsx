@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface BlockedNumber {
   id: string;
@@ -8,8 +9,8 @@ export interface BlockedNumber {
 
 interface BlockedNumbersContextType {
   blockedNumbers: BlockedNumber[];
-  addBlockedNumber: (gameId: string, numero: string) => void;
-  removeBlockedNumber: (id: string) => void;
+  addBlockedNumber: (gameId: string, numero: string) => Promise<void>;
+  removeBlockedNumber: (id: string) => Promise<void>;
   getBlockedNumbersByGame: (gameId: string) => BlockedNumber[];
 }
 
@@ -17,31 +18,65 @@ const BlockedNumbersContext = createContext<BlockedNumbersContextType | undefine
   undefined
 );
 
-const initialBlockedNumbers: BlockedNumber[] = [];
-
 export function BlockedNumbersProvider({ children }: { children: ReactNode }) {
-  const [blockedNumbers, setBlockedNumbers] = useState<BlockedNumber[]>(
-    initialBlockedNumbers
-  );
+  const [blockedNumbers, setBlockedNumbers] = useState<BlockedNumber[]>([]);
 
-  const addBlockedNumber = (gameId: string, numero: string) => {
+  useEffect(() => {
+    const loadBlocked = async () => {
+      const { data, error } = await supabase.from('blocked_numbers').select('*');
+
+      if (error) {
+        console.error('Erro ao carregar números bloqueados:', error);
+        return;
+      }
+
+      if (data) {
+        const mapped: BlockedNumber[] = data.map((row: any) => ({
+          id: row.id,
+          gameId: row.game_id,
+          numero: row.numero,
+        }));
+        setBlockedNumbers(mapped);
+      }
+    };
+
+    loadBlocked();
+  }, []);
+
+  const addBlockedNumber = async (gameId: string, numero: string) => {
+    const { data, error } = await supabase
+      .from('blocked_numbers')
+      .insert({ game_id: gameId, numero })
+      .select('*')
+      .single();
+
+    if (error || !data) {
+      console.error('Erro ao bloquear número:', error);
+      return;
+    }
+
+    const newItem: BlockedNumber = {
+      id: data.id,
+      gameId: data.game_id,
+      numero: data.numero,
+    };
+
     setBlockedNumbers((prev) => {
-      // avoid duplicates for same game/number
-      if (prev.some((b) => b.gameId === gameId && b.numero === numero)) {
+      if (prev.some((b) => b.gameId === newItem.gameId && b.numero === newItem.numero)) {
         return prev;
       }
-      return [
-        ...prev,
-        {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          gameId,
-          numero,
-        },
-      ];
+      return [...prev, newItem];
     });
   };
 
-  const removeBlockedNumber = (id: string) => {
+  const removeBlockedNumber = async (id: string) => {
+    const { error } = await supabase.from('blocked_numbers').delete().eq('id', id);
+
+    if (error) {
+      console.error('Erro ao remover número bloqueado:', error);
+      return;
+    }
+
     setBlockedNumbers((prev) => prev.filter((b) => b.id !== id));
   };
 

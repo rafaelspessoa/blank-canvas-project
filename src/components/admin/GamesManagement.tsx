@@ -72,9 +72,9 @@ export function GamesManagement() {
     resetForm();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.nome?.trim()) {
       toast.error('Informe o nome do jogo');
       return;
@@ -85,7 +85,7 @@ export function GamesManagement() {
         ...(editingGame as Game),
         ...formData,
       } as Game;
-      updateGame(updatedGame);
+      await updateGame(updatedGame);
       toast.success('Jogo atualizado com sucesso!');
     } else {
       const newGame: Game = {
@@ -99,27 +99,27 @@ export function GamesManagement() {
         horario_fechamento: formData.horario_fechamento!,
         ativo: formData.ativo!,
       };
-      addGame(newGame);
+      await addGame(newGame);
       toast.success('Jogo criado com sucesso!');
     }
- 
+
     handleCloseDialog();
   };
 
-  const handleToggleActive = (id: string) => {
+  const handleToggleActive = async (id: string) => {
     const game = games.find((g) => g.id === id);
-    toggleActive(id);
+    await toggleActive(id);
     toast.success(`Jogo ${game?.ativo ? 'desativado' : 'ativado'} com sucesso!`);
   };
- 
-  const handleDelete = (id: string) => {
-    deleteGame(id);
+
+  const handleDelete = async (id: string) => {
+    await deleteGame(id);
     toast.success('Jogo excluído com sucesso!');
   };
 
   const handleTipoChange = (tipo: 'milhar' | 'centena') => {
     const multiplicador = tipo === 'milhar' ? 4000 : 600;
-    setFormData(prev => ({ ...prev, tipo, multiplicador }));
+    setFormData((prev) => ({ ...prev, tipo, multiplicador }));
   };
 
   return (
@@ -128,11 +128,9 @@ export function GamesManagement() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">Gestão de Jogos</h1>
-          <p className="text-muted-foreground mt-1">
-            Crie e configure os jogos disponíveis
-          </p>
+          <p className="text-muted-foreground mt-1">Crie e configure os jogos disponíveis</p>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="accent" size="lg" onClick={() => handleOpenDialog()}>
@@ -142,9 +140,7 @@ export function GamesManagement() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                {editingGame ? 'Editar Jogo' : 'Criar Novo Jogo'}
-              </DialogTitle>
+              <DialogTitle>{editingGame ? 'Editar Jogo' : 'Criar Novo Jogo'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="space-y-2">
@@ -153,7 +149,7 @@ export function GamesManagement() {
                   id="nome"
                   placeholder="Ex: Milhar Principal"
                   value={formData.nome}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, nome: e.target.value }))}
                 />
               </div>
 
@@ -195,7 +191,12 @@ export function GamesManagement() {
                     min="0.5"
                     step="0.5"
                     value={formData.valor_minimo}
-                    onChange={(e) => setFormData(prev => ({ ...prev, valor_minimo: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        valor_minimo: Number(e.target.value),
+                      }))
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -205,7 +206,12 @@ export function GamesManagement() {
                     type="number"
                     min="1"
                     value={formData.valor_maximo}
-                    onChange={(e) => setFormData(prev => ({ ...prev, valor_maximo: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        valor_maximo: Number(e.target.value),
+                      }))
+                    }
                   />
                 </div>
               </div>
@@ -228,14 +234,6 @@ export function GamesManagement() {
                     className="pl-9"
                   />
                 </div>
-                {typeof formData.multiplicador === 'number' && !Number.isNaN(formData.multiplicador) && (
-                  <p className="text-xs text-muted-foreground">
-                    {formData.multiplicador.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })}
-                  </p>
-                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -245,7 +243,12 @@ export function GamesManagement() {
                     id="horario_abertura"
                     type="time"
                     value={formData.horario_abertura}
-                    onChange={(e) => setFormData(prev => ({ ...prev, horario_abertura: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        horario_abertura: e.target.value,
+                      }))
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -254,30 +257,35 @@ export function GamesManagement() {
                     id="horario_fechamento"
                     type="time"
                     value={formData.horario_fechamento}
-                    onChange={(e) => setFormData(prev => ({ ...prev, horario_fechamento: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        horario_fechamento: e.target.value,
+                      }))
+                    }
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <div>
-                  <p className="font-medium text-foreground">Jogo Ativo</p>
-                  <p className="text-sm text-muted-foreground">
-                    Disponível para apostas
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="ativo"
+                    checked={formData.ativo}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, ativo: checked }))
+                    }
+                  />
+                  <Label htmlFor="ativo">Jogo ativo</Label>
                 </div>
-                <Switch
-                  checked={formData.ativo}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, ativo: checked }))}
-                />
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" className="flex-1" onClick={handleCloseDialog}>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="ghost" onClick={handleCloseDialog}>
                   Cancelar
                 </Button>
-                <Button type="submit" variant="accent" className="flex-1">
-                  {editingGame ? 'Salvar' : 'Criar Jogo'}
+                <Button type="submit" variant="accent">
+                  {editingGame ? 'Salvar alterações' : 'Criar jogo'}
                 </Button>
               </div>
             </form>
@@ -285,104 +293,72 @@ export function GamesManagement() {
         </Dialog>
       </div>
 
-      {/* Games Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {games.map((game) => (
-          <div 
-            key={game.id}
-            className={cn(
-              "glass-card rounded-xl p-5 space-y-4 transition-all",
-              !game.ativo && "opacity-60"
-            )}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center",
-                  `game-badge-${game.tipo}`
-                )}>
-                  <span className="font-bold text-lg">
-                    {tipoInfo[game.tipo].digits}d
-                  </span>
+      {/* Listing */}
+      <div className="glass-card rounded-xl p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {games.map((game) => (
+            <div
+              key={game.id}
+              className={cn(
+                'rounded-lg border border-border bg-card p-4 shadow-sm',
+                game.ativo ? 'opacity-100' : 'opacity-60',
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-foreground">{game.nome}</h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleOpenDialog(game)}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleDelete(game.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">{game.nome}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {tipoInfo[game.tipo].label}
-                  </p>
-                </div>
               </div>
-              <div className={cn(
-                "px-2 py-1 rounded-full text-xs font-medium",
-                game.ativo 
-                  ? "bg-accent/20 text-accent" 
-                  : "bg-destructive/20 text-destructive"
-              )}>
-                {game.ativo ? 'Ativo' : 'Inativo'}
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="flex items-center gap-2 text-sm">
-                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Min:</span>
-                <span className="font-medium text-foreground">R$ {game.valor_minimo}</span>
+              <div className="text-sm text-muted-foreground mt-1">
+                <span className="inline-flex items-center gap-1">
+                  <Trophy className="w-4 h-4" />
+                  Prêmio: R$ {game.multiplicador}
+                </span>
+                <br />
+                <span className="inline-flex items-center gap-1">
+                  <DollarSign className="w-4 h-4" />
+                  R$ {game.valor_minimo} - R$ {game.valor_maximo}
+                </span>
+                <br />
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {game.horario_abertura} - {game.horario_fechamento}
+                </span>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Máx:</span>
-                <span className="font-medium text-foreground">R$ {game.valor_maximo}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Trophy className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Prêmio:</span>
-                <span className="font-medium text-foreground">{game.multiplicador}x</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span className="text-foreground">{game.horario_abertura} - {game.horario_fechamento}</span>
-              </div>
-            </div>
 
-            <div className="flex gap-2 pt-2 border-t border-border">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1"
-                onClick={() => handleOpenDialog(game)}
-              >
-                <Edit2 className="w-4 h-4 mr-1" />
-                Editar
-              </Button>
               <Button
-                variant="outline"
-                size="sm"
+                variant="secondary"
+                className="w-full mt-4"
                 onClick={() => handleToggleActive(game.id)}
               >
-                <Power className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-                onClick={() => handleDelete(game.id)}
-              >
-                <Trash2 className="w-4 h-4" />
+                <Power className="w-4 h-4 mr-2" />
+                {game.ativo ? 'Desativar Jogo' : 'Ativar Jogo'}
               </Button>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {games.length === 0 && (
-        <div className="text-center py-12">
-          <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground">Nenhum jogo cadastrado</h3>
-          <p className="text-muted-foreground mt-1">
-            Clique em "Novo Jogo" para criar o primeiro
-          </p>
+          ))}
         </div>
-      )}
+
+        {games.length === 0 && (
+          <div className="text-center text-muted-foreground">
+            Nenhum jogo cadastrado. Comece criando um novo jogo!
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -3,13 +3,13 @@ import { useBets } from '@/contexts/BetsContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GameTypeBadge } from '@/components/shared/GameTypeBadge';
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   XCircle,
   Calendar,
   Download,
-  Printer
+  Printer,
 } from 'lucide-react';
 import {
   Select,
@@ -42,12 +42,12 @@ export function BetsManagement() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedBetId, setSelectedBetId] = useState<string | null>(null);
 
-  const filteredBets = bets.filter(bet => {
-    const matchesSearch = 
+  const filteredBets = bets.filter((bet) => {
+    const matchesSearch =
       bet.numero.includes(searchTerm) ||
       bet.vendedor_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bet.codigo.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesGameType = gameTypeFilter === 'all' || bet.tipo_jogo === gameTypeFilter;
     const matchesStatus = statusFilter === 'all' || bet.status === statusFilter;
 
@@ -55,12 +55,12 @@ export function BetsManagement() {
   });
 
   const totalValue = filteredBets
-    .filter(b => b.status === 'ativa')
+    .filter((b) => b.status === 'ativa')
     .reduce((sum, bet) => sum + bet.valor, 0);
 
-  const handleCancelBet = () => {
+  const handleCancelBet = async () => {
     if (selectedBetId) {
-      cancelBet(selectedBetId);
+      await cancelBet(selectedBetId);
       toast.success('Aposta cancelada com sucesso!');
       setCancelDialogOpen(false);
       setSelectedBetId(null);
@@ -78,7 +78,9 @@ export function BetsManagement() {
       currency: 'BRL',
     });
 
-    const dataFormatada = format(new Date(bet.data_hora), "dd/MM/yyyy HH:mm", { locale: ptBR });
+    const dataFormatada = format(new Date(bet.data_hora), 'dd/MM/yyyy HH:mm', {
+      locale: ptBR,
+    });
 
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -119,28 +121,29 @@ export function BetsManagement() {
         <span class="number-pill">${bet.numero}</span>
         <span class="badge">${bet.tipo_jogo.toUpperCase()}</span>
       </div>
-      <div class="row" style="margin-top:10px;"><span class="muted">VALOR:</span><span>${valorFormatado}</span></div>
     </div>
 
-    <div class="total-box">
-      <div class="total-label">TOTAL</div>
-      <div class="total-value">${valorFormatado}</div>
+    <div class="section">
+      <div class="total-box">
+        <div class="total-label">VALOR APOSTADO</div>
+        <div class="total-value">${valorFormatado}</div>
+      </div>
     </div>
 
-    <div class="footer">Boa sorte!</div>
+    <div class="footer">
+      <div>ESSE BILHETE VALE ATÉ AS 16H DO PROXIMO DIA</div>
+      <div style="margin-top:4px;">Guarde este comprovante para conferência.</div>
+    </div>
   </div>
-  <script>
-    window.onload = function() { window.print(); };
-  </script>
 </body>
 </html>`;
 
-    const printWindow = window.open('', '_blank', 'width=420,height=600');
-    if (printWindow) {
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-    }
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    if (!printWindow) return;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
   };
 
   return (
@@ -366,4 +369,3 @@ export function BetsManagement() {
     </div>
   );
 }
-
