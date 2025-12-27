@@ -21,14 +21,8 @@ export function MyFinancial() {
   const todayTotal = getTodayTotal(user.id);
   const estimatedCommission = todayTotal * (user.comissao / 100);
 
-  // Simulated historical data
-  const closings = [
-    { date: subDays(new Date(), 1), total: 850, commission: 85 },
-    { date: subDays(new Date(), 2), total: 1200, commission: 120 },
-    { date: subDays(new Date(), 3), total: 650, commission: 65 },
-    { date: subDays(new Date(), 4), total: 980, commission: 98 },
-    { date: subDays(new Date(), 5), total: 1100, commission: 110 },
-  ];
+  // Sem fechamentos iniciais - app zerado para produção
+  const closings: Array<{ date: Date; total: number; commission: number }> = [];
 
   const weekTotal = closings.reduce((sum, c) => sum + c.commission, 0) + estimatedCommission;
 
@@ -110,33 +104,39 @@ export function MyFinancial() {
           </div>
 
           {/* Historical */}
-          {closings.map((closing, index) => (
-            <div key={index} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-muted-foreground" />
+          {closings.length > 0 ? (
+            closings.map((closing, index) => (
+              <div key={index} className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {format(closing.date, "EEEE", { locale: ptBR })}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {format(closing.date, "dd 'de' MMMM", { locale: ptBR })}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {format(closing.date, "EEEE", { locale: ptBR })}
+                  <div className="text-right">
+                    <p className="font-bold text-foreground">
+                      {closing.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      {format(closing.date, "dd 'de' MMMM", { locale: ptBR })}
+                    <p className="text-sm text-success">
+                      +{closing.commission.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </p>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-foreground">
-                    {closing.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </p>
-                  <p className="text-sm text-success">
-                    +{closing.commission.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </p>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="p-8 text-center text-muted-foreground">
+              Nenhum fechamento anterior
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
