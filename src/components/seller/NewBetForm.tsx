@@ -478,7 +478,7 @@ export function NewBetForm() {
                 key={value}
                 type="button"
                 variant="outline"
-                size="xs"
+                size="sm"
                 onClick={() => handleQuickValue(value)}
               >
                 R$ {value.toFixed(2)}

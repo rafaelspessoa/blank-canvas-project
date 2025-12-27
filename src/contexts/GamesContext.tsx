@@ -83,7 +83,7 @@ export function GamesProvider({ children }: { children: ReactNode }) {
     const newGame: Game = {
       id: data.id,
       nome: data.nome,
-      tipo: data.tipo,
+      tipo: data.tipo as 'milhar' | 'centena',
       valor_minimo: Number(data.valor_minimo),
       valor_maximo: Number(data.valor_maximo),
       multiplicador: Number(data.multiplicador),
@@ -120,7 +120,7 @@ export function GamesProvider({ children }: { children: ReactNode }) {
     const updated: Game = {
       id: data.id,
       nome: data.nome,
-      tipo: data.tipo,
+      tipo: data.tipo as 'milhar' | 'centena',
       valor_minimo: Number(data.valor_minimo),
       valor_maximo: Number(data.valor_maximo),
       multiplicador: Number(data.multiplicador),
@@ -162,7 +162,7 @@ export function GamesProvider({ children }: { children: ReactNode }) {
     const updated: Game = {
       id: data.id,
       nome: data.nome,
-      tipo: data.tipo,
+      tipo: data.tipo as 'milhar' | 'centena',
       valor_minimo: Number(data.valor_minimo),
       valor_maximo: Number(data.valor_maximo),
       multiplicador: Number(data.multiplicador),
