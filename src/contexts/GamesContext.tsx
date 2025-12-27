@@ -22,30 +22,8 @@ interface GamesContextType {
 
 const GamesContext = createContext<GamesContextType | undefined>(undefined);
 
-const initialGames: Game[] = [
-  {
-    id: '1',
-    nome: 'Milhar Principal',
-    tipo: 'milhar',
-    valor_minimo: 1,
-    valor_maximo: 100,
-    multiplicador: 4000,
-    horario_abertura: '08:00',
-    horario_fechamento: '22:00',
-    ativo: true,
-  },
-  {
-    id: '2',
-    nome: 'Centena Rápida',
-    tipo: 'centena',
-    valor_minimo: 1,
-    valor_maximo: 200,
-    multiplicador: 600,
-    horario_abertura: '09:00',
-    horario_fechamento: '21:00',
-    ativo: true,
-  },
-];
+// Sem jogos iniciais - app zerado para produção
+const initialGames: Game[] = [];
 
 export function GamesProvider({ children }: { children: ReactNode }) {
   const [games, setGames] = useState<Game[]>(initialGames);

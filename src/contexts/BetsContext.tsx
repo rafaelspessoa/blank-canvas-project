@@ -23,42 +23,8 @@ const generateCode = () => {
   return code;
 };
 
-// Mock initial bets
-const initialBets: Bet[] = [
-  {
-    id: '1',
-    vendedor_id: '2',
-    vendedor_nome: 'João Vendedor',
-    tipo_jogo: 'milhar',
-    numero: '1234',
-    valor: 10,
-    data_hora: new Date().toISOString(),
-    status: 'ativa',
-    codigo: 'ABC12345',
-  },
-  {
-    id: '2',
-    vendedor_id: '2',
-    vendedor_nome: 'João Vendedor',
-    tipo_jogo: 'centena',
-    numero: '567',
-    valor: 5,
-    data_hora: new Date().toISOString(),
-    status: 'ativa',
-    codigo: 'DEF67890',
-  },
-  {
-    id: '3',
-    vendedor_id: '3',
-    vendedor_nome: 'Maria Vendedora',
-    tipo_jogo: 'dezena',
-    numero: '89',
-    valor: 2,
-    data_hora: new Date().toISOString(),
-    status: 'ativa',
-    codigo: 'GHI11223',
-  },
-];
+// Sem apostas iniciais - app zerado para produção
+const initialBets: Bet[] = [];
 
 export function BetsProvider({ children }: { children: ReactNode }) {
   const [bets, setBets] = useState<Bet[]>(initialBets);
