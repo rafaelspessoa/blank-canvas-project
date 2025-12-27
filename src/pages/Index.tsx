@@ -8,6 +8,7 @@ import { BetsManagement } from '@/components/admin/BetsManagement';
 import { FinancialReports } from '@/components/admin/FinancialReports';
 import { GameSettings } from '@/components/admin/GameSettings';
 import { GamesManagement } from '@/components/admin/GamesManagement';
+import { BlockedNumbersManagement } from '@/components/admin/BlockedNumbersManagement';
 import { NewBetForm } from '@/components/seller/NewBetForm';
 import { MyBets } from '@/components/seller/MyBets';
 import { MyFinancial } from '@/components/seller/MyFinancial';
@@ -57,6 +58,8 @@ export default function Index() {
           return <FinancialReports />;
         case 'configuracoes':
           return <GameSettings />;
+        case 'numeros-bloqueados':
+          return <BlockedNumbersManagement />;
         default:
           return <AdminDashboard />;
       }
